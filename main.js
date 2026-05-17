@@ -158,7 +158,7 @@ const CONFIG = {
     */
   },
 
-  enemies: {
+    enemies: {
     basic: {
       name: "Da Boiiiiii",
       hp: 90,
@@ -181,17 +181,17 @@ const CONFIG = {
       speed: 0.48,
       damage: 8,
       img: "fastDerp"
-    }
-  },
+    },
 
-  mecha: {
+    mechaDerp: {
       name: "Mecha Derp",
       hp: 600,
       speed: 0.16,
       damage: 28,
-      img: "mechaDerp"
+      img: "mechaDerp",
+      boss: true
     }
-  }
+  },
 
   images: {
     campfr: "assets/plant-campfr.png",
@@ -390,12 +390,10 @@ const CONFIG = {
           { type: "fast", row: 2, delay: 430 }
         ]
       ],
-      lava: [[4, 0], [4, 1], [4, 3], [4, 4]]
-    }
-  ]
-},
+            lava: [[4, 0], [4, 1], [4, 3], [4, 4]]
+    },
 
-{
+    {
       name: "2-1",
       title: "Start of The Derp Ages",
       desc: "Now fighting with machines.",
@@ -417,7 +415,7 @@ const CONFIG = {
           { type: "fast", row: 2, delay: 430 }
         ],
         [
-          { type: "mechaderp", row: 3, delay: 530 }
+          { type: "mechaDerp", row: 3, delay: 530 }
         ]
       ],
       lava: [[4, 0], [4, 1], [4, 3], [5, 1], [5, 4], [4, 4]]
