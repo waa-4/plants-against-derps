@@ -1,5 +1,5 @@
-// Plants Against Derps - main.js v1.2
-// Clean replacement with easy CONFIG section + music support.
+// Plants Against Derps - main.js v1.3 FIXED
+// Paste Part 1, then paste Part 2 directly under it.
 
 // ============================================================
 // EASY CONFIG - edit this first
@@ -37,7 +37,11 @@ const CONFIG = {
       cost: 25,
       hp: 80,
       img: "campfr",
-      desc: "Makes Glow."
+      desc: "Makes Glow.",
+
+      producer: true,
+      produceAmount: 25,
+      produceCooldown: 900
     },
 
     treeGun: {
@@ -46,9 +50,16 @@ const CONFIG = {
       hp: 100,
       img: "treeGun",
       desc: "Shoots derps.",
+
+      shooter: true,
       shootCooldown: 115,
       projectileDamage: 24,
-      projectileSpeed: 4.5
+      projectileSpeed: 4.5,
+
+      multiLane: false,
+      areaDamage: false,
+      areaRadius: 0,
+      doubleShotChance: 0
     },
 
     rosegun: {
@@ -56,10 +67,17 @@ const CONFIG = {
       cost: 50,
       hp: 60,
       img: "rosegun",
-      desc: "Shoots derps in a worse way.",
-      shootCooldown: 115,
-      projectileDamage: 15,
-      projectileSpeed: 2
+      desc: "Cheaper weaker Tree Gun.",
+
+      shooter: true,
+      shootCooldown: 100,
+      projectileDamage: 12,
+      projectileSpeed: 5.2,
+
+      multiLane: false,
+      areaDamage: false,
+      areaRadius: 0,
+      doubleShotChance: 10
     },
 
     kaboom: {
@@ -68,6 +86,7 @@ const CONFIG = {
       hp: 40,
       img: "kaboom",
       desc: "Explodes.",
+
       fuse: 90,
       damage: 180,
       radius: 140
@@ -103,13 +122,13 @@ const CONFIG = {
   images: {
     campfr: "assets/plant-campfr.png",
     treeGun: "assets/plant-tree-gun.png",
+    rosegun: "assets/rosegun.png",
     kaboom: "assets/plant-el-kaboom.png",
     basicDerp: "assets/enemy-basic-derp.png",
     armoredDerp: "assets/enemy-armored-derp.png",
     fastDerp: "assets/enemy-fast-derp.png",
     glow: "assets/resource-glow.png",
     grass: "assets/tile-grass.png"
-    rosegun: "assets/rosegun.png"
   },
 
   // Customize levels here.
@@ -446,6 +465,7 @@ function playSfx(type) {
     osc.stop(audioCtx.currentTime + duration);
   } catch (err) {}
 }
+
 function showScreen(name) {
   for (const screen of Object.values(screens)) {
     screen.classList.remove("active");
@@ -469,7 +489,6 @@ function initLevelButtons() {
     levelGridEl.appendChild(button);
   });
 }
-
 function initCards() {
   cardsEl.innerHTML = "";
 
@@ -549,7 +568,10 @@ function startLevel(index) {
   showScreen("game");
   playMusic("battle");
   initCards();
-  selectPlant("campfr");
+
+  const firstPlantId = Object.keys(CONFIG.plants)[0];
+  selectPlant(firstPlantId);
+
   updateHud();
   requestAnimationFrame(gameLoop);
 }
@@ -594,6 +616,12 @@ function plantAt(row, col, type) {
   const cell = state.grid[row][col];
   const plantDef = CONFIG.plants[type];
 
+  if (!plantDef) {
+    say(`Unknown plant: ${type}`);
+    playSfx("no");
+    return;
+  }
+
   if (cell.tile === "lava") {
     say("You cannot plant on lava. Mor Level says no.");
     playSfx("no");
@@ -620,8 +648,8 @@ function plantAt(row, col, type) {
     col,
     hp: plantDef.hp,
     maxHp: plantDef.hp,
-    cooldown: type === "campfr" ? CONFIG.balancing.campfrGlowCooldown : type === "treeGun" ? plantDef.shootCooldown : 180,
-    fuse: type === "kaboom" ? plantDef.fuse : 0
+    cooldown: getStartingCooldown(plantDef),
+    fuse: plantDef.fuse || 0
   };
 
   cell.plant = plant;
@@ -632,8 +660,25 @@ function plantAt(row, col, type) {
   updateHud();
 }
 
+function getStartingCooldown(plantDef) {
+  if (plantDef.producer) {
+    return plantDef.produceCooldown ?? CONFIG.balancing.campfrGlowCooldown;
+  }
+
+  if (plantDef.shooter) {
+    return plantDef.shootCooldown ?? 120;
+  }
+
+  return 180;
+}
+
 function spawnEnemy(type, row) {
   const def = CONFIG.enemies[type];
+
+  if (!def) {
+    console.warn(`Unknown enemy type: ${type}`);
+    return;
+  }
 
   state.enemies.push({
     type,
@@ -717,54 +762,21 @@ function updateWaves() {
 
 function updatePlants() {
   for (const plant of [...state.plants]) {
+    const plantDef = CONFIG.plants[plant.id];
+
+    if (!plantDef) continue;
+
     plant.cooldown--;
 
-    if (plant.id === "campfr") {
-      if (plant.cooldown <= 0) {
-        state.glow += CONFIG.balancing.campfrGlowAmount;
-        plant.cooldown = CONFIG.balancing.campfrGlowCooldown;
-        popParticle(
-          GRID_X + plant.col * CELL_W + CELL_W / 2,
-          GRID_Y + plant.row * CELL_H + 20,
-          "#ffe95a"
-        );
-        playSfx("glow");
-      }
+    if (plantDef.producer) {
+      updateProducerPlant(plant, plantDef);
     }
 
-//TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-  //TUNG TUNG SAPEAK
-    
-    if (plant.id === "treeGun" || plant.id === "roseGun") {
-      const plantDef = CONFIG.plants[plant.id];
-      const plantX = GRID_X + plant.col * CELL_W;
-
-      const hasTarget = state.enemies.some(enemy => {
-        return enemy.row === plant.row && enemy.x > plantX;
-      });
-
-      if (plant.cooldown <= 0 && hasTarget) {
-        state.projectiles.push({
-          x: GRID_X + plant.col * CELL_W + CELL_W * 0.65,
-          y: GRID_Y + plant.row * CELL_H + CELL_H * 0.45,
-          row: plant.row,
-          speed: plantDef.projectileSpeed,
-          damage: plantDef.projectileDamage
-        });
-
-        plant.cooldown = plantDef.shootCooldown;
-        playSfx("shoot");
-      }
+    if (plantDef.shooter) {
+      updateShooterPlant(plant, plantDef);
     }
 
-    if (plant.id === "kaboom") {
+    if (plant.id === "kaboom" || plantDef.fuse) {
       plant.fuse--;
 
       if (plant.fuse <= 0) {
@@ -772,6 +784,68 @@ function updatePlants() {
       }
     }
   }
+}
+
+function updateProducerPlant(plant, plantDef) {
+  if (plant.cooldown > 0) return;
+
+  const amount = plantDef.produceAmount ?? CONFIG.balancing.campfrGlowAmount;
+  const cooldown = plantDef.produceCooldown ?? CONFIG.balancing.campfrGlowCooldown;
+
+  state.glow += amount;
+  plant.cooldown = cooldown;
+
+  popParticle(
+    GRID_X + plant.col * CELL_W + CELL_W / 2,
+    GRID_Y + plant.row * CELL_H + 20,
+    "#ffe95a"
+  );
+
+  playSfx("glow");
+}
+
+function updateShooterPlant(plant, plantDef) {
+  const plantX = GRID_X + plant.col * CELL_W;
+
+  const hasTarget = state.enemies.some(enemy => {
+    if (enemy.x <= plantX) return false;
+
+    if (plantDef.multiLane) {
+      return Math.abs(enemy.row - plant.row) <= 1;
+    }
+
+    return enemy.row === plant.row;
+  });
+
+  if (plant.cooldown > 0 || !hasTarget) return;
+
+  firePlantProjectile(plant, plantDef, plant.row);
+
+  if (plantDef.multiLane) {
+    firePlantProjectile(plant, plantDef, plant.row - 1);
+    firePlantProjectile(plant, plantDef, plant.row + 1);
+  }
+
+  if (Math.random() * 100 < (plantDef.doubleShotChance || 0)) {
+    firePlantProjectile(plant, plantDef, plant.row);
+  }
+
+  plant.cooldown = plantDef.shootCooldown ?? 120;
+  playSfx("shoot");
+}
+
+function firePlantProjectile(plant, plantDef, row) {
+  if (row < 0 || row >= ROWS) return;
+
+  state.projectiles.push({
+    x: GRID_X + plant.col * CELL_W + CELL_W * 0.65,
+    y: GRID_Y + row * CELL_H + CELL_H * 0.45,
+    row,
+    speed: plantDef.projectileSpeed || 4.5,
+    damage: plantDef.projectileDamage || 20,
+    areaDamage: plantDef.areaDamage || false,
+    areaRadius: plantDef.areaRadius || 0
+  });
 }
 
 function updateProjectiles() {
@@ -784,7 +858,18 @@ function updateProjectiles() {
     });
 
     if (hitEnemy) {
-      hitEnemy.hp -= projectile.damage;
+      if (projectile.areaDamage) {
+        for (const enemy of state.enemies) {
+          const distance = Math.hypot(enemy.x - hitEnemy.x, enemy.y - hitEnemy.y);
+
+          if (distance <= projectile.areaRadius) {
+            enemy.hp -= projectile.damage;
+          }
+        }
+      } else {
+        hitEnemy.hp -= projectile.damage;
+      }
+
       state.projectiles.splice(i, 1);
       popParticle(hitEnemy.x, hitEnemy.y, "#b8754a");
       playSfx("hit");
@@ -847,15 +932,15 @@ function updateEnemies() {
 }
 
 function explodePlant(plant) {
-  const plantDef = CONFIG.plants.kaboom;
+  const plantDef = CONFIG.plants[plant.id] || CONFIG.plants.kaboom;
   const centerX = GRID_X + plant.col * CELL_W + CELL_W / 2;
   const centerY = GRID_Y + plant.row * CELL_H + CELL_H / 2;
 
   for (const enemy of state.enemies) {
     const distance = Math.hypot(enemy.x - centerX, enemy.y - centerY);
 
-    if (distance < plantDef.radius) {
-      enemy.hp -= plantDef.damage;
+    if (distance < (plantDef.radius || 140)) {
+      enemy.hp -= plantDef.damage || 180;
     }
   }
 
@@ -869,7 +954,7 @@ function explodePlant(plant) {
   state.grid[plant.row][plant.col].plant = null;
   state.plants = state.plants.filter(current => current !== plant);
 
-  say("EL KABOOM.");
+  say(`${plantDef.name || "Plant"} went kaboom.`);
   playSfx("boom");
 }
 
@@ -951,7 +1036,7 @@ function drawPlants() {
     const x = GRID_X + plant.col * CELL_W + 6;
     const y = GRID_Y + plant.row * CELL_H + 3;
 
-    const img = images[def.img];
+    const img = def ? images[def.img] : null;
 
     if (img && img.complete) {
       ctx.drawImage(img, x, y, CELL_W - 12, CELL_H - 8);
@@ -973,7 +1058,7 @@ function drawPlants() {
 function drawEnemies() {
   for (const enemy of state.enemies) {
     const def = CONFIG.enemies[enemy.type];
-    const img = images[def.img];
+    const img = def ? images[def.img] : null;
 
     if (img && img.complete) {
       ctx.drawImage(img, enemy.x - 38, enemy.y - 42, 76, 76);
@@ -1060,29 +1145,29 @@ document.getElementById("restartLevel").addEventListener("click", () => {
   startLevel(state?.levelIndex || 0);
 });
 
-document.getElementById("fullscreenBtn").addEventListener("click", async () => {
-  const gameScreen = document.getElementById("gameScreen");
+const fullscreenButton = document.getElementById("fullscreenBtn");
 
-  try {
-    if (!document.fullscreenElement) {
-      await gameScreen.requestFullscreen();
-      document.getElementById("fullscreenBtn").textContent = "Exit Fullscreen";
-    } else {
-      await document.exitFullscreen();
-      document.getElementById("fullscreenBtn").textContent = "Fullscreen";
+if (fullscreenButton) {
+  fullscreenButton.addEventListener("click", async () => {
+    const gameScreen = document.getElementById("gameScreen");
+
+    try {
+      if (!document.fullscreenElement) {
+        await gameScreen.requestFullscreen();
+        fullscreenButton.textContent = "Exit Fullscreen";
+      } else {
+        await document.exitFullscreen();
+        fullscreenButton.textContent = "Fullscreen";
+      }
+    } catch (err) {
+      console.warn("Fullscreen failed:", err);
     }
-  } catch (err) {
-    console.warn("Fullscreen failed:", err);
-  }
-});
+  });
 
-document.addEventListener("fullscreenchange", () => {
-  const button = document.getElementById("fullscreenBtn");
-
-  if (!button) return;
-
-  button.textContent = document.fullscreenElement ? "Exit Fullscreen" : "Fullscreen";
-});
+  document.addEventListener("fullscreenchange", () => {
+    fullscreenButton.textContent = document.fullscreenElement ? "Exit Fullscreen" : "Fullscreen";
+  });
+}
 
 initLevelButtons();
 showScreen("menu");
