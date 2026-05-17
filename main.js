@@ -184,7 +184,7 @@ const CONFIG = {
     }
   },
 
-  mechaderp: {
+  mecha: {
       name: "Mecha Derp",
       hp: 200,
       speed: 2,
