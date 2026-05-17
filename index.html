@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plants Against Derps</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="mainMenu" class="screen active">
+      <div class="aero-orbs"><span></span><span></span><span></span><span></span></div>
+      <div class="menu-left">
+        <h1>Plants Against Derps</h1>
+        <p class="tagline">A very professional lawn defense experience.</p>
+        <button id="playBtn" class="bubble-btn">Play</button>
+        <button id="levelBtn" class="bubble-btn">Level Selectr</button>
+        <button id="howBtn" class="bubble-btn">How To Derp</button>
+      </div>
+      <div class="menu-art">
+        <div class="glass-card">
+          <img src="assets/plant-tree-gun.png" alt="Tree Gun" />
+          <h2>Tree Gun says hello.</h2>
+          <p>The menu is detailed. The actual game is a mess. This is intended.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="levelScreen" class="screen">
+      <div class="panel">
+        <h2>World 1: The Lawn of Questionable Choices</h2>
+        <p>Pick a level. Levels are customizable in <code>main.js</code>.</p>
+        <div id="levelGrid"></div>
+        <button class="bubble-btn small" id="backFromLevels">Back</button>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen">
+      <div id="topHud">
+        <div><b id="levelTitle">Level 1</b><span id="levelDesc"> Survive the derps.</span></div>
+        <div id="stats"><span id="glowText">Glow: 50</span><span id="waveText">Wave: 0/0</span><span id="statusText">Ready</span></div>
+      </div>
+      <div id="gameWrap"><aside id="cards"></aside><canvas id="game" width="900" height="520"></canvas></div>
+      <div id="gameBottom"><button class="bubble-btn small" id="backToMenu">Menu</button><button class="bubble-btn small" id="restartLevel">Restart</button><span id="message">Welcome to the derp lawn.</span></div>
+    </section>
+
+    <section id="howScreen" class="screen">
+      <div class="panel">
+        <h2>How To Derp</h2>
+        <p><b>Campfr</b> makes Glow over time. It replaces the usual boring resource producer.</p>
+        <p><b>Tree Gun</b> shoots derps in its lane.</p>
+        <p><b>El Kaboom</b> explodes in a small area after a short fuse.</p>
+        <p><b>Lava tiles</b> cannot be planted on. They are for future Mor Level challenges.</p>
+        <p>Win by surviving all waves. Lose if a derp reaches the left side.</p>
+        <button class="bubble-btn small" id="backFromHow">Back</button>
+      </div>
+    </section>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
