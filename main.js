@@ -109,6 +109,7 @@ const CONFIG = {
     fastDerp: "assets/enemy-fast-derp.png",
     glow: "assets/resource-glow.png",
     grass: "assets/tile-grass.png"
+    rosegun: "assets/rosegun.png"
   },
 
   // Customize levels here.
@@ -732,7 +733,7 @@ function updatePlants() {
     }
 
     if (plant.id === "treeGun") {
-      const plantDef = CONFIG.plants.treeGun;
+      const plantDef = CONFIG.plants[plant.id];
       const plantX = GRID_X + plant.col * CELL_W;
 
       const hasTarget = state.enemies.some(enemy => {
