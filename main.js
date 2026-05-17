@@ -186,9 +186,9 @@ const CONFIG = {
 
   mecha: {
       name: "Mecha Derp",
-      hp: 200,
-      speed: 2,
-      damage: 50,
+      hp: 600,
+      speed: 0.16,
+      damage: 28,
       img: "mechaDerp"
     }
   }
