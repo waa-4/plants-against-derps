@@ -732,7 +732,17 @@ function updatePlants() {
       }
     }
 
-    if (plant.id === "treeGun") {
+//TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+  //TUNG TUNG SAPEAK
+    
+    if (plant.id === "treeGun" || plant.id === "roseGun") {
       const plantDef = CONFIG.plants[plant.id];
       const plantX = GRID_X + plant.col * CELL_W;
 
