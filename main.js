@@ -55,7 +55,7 @@ const CONFIG = {
 
     treeGun: {
       name: "Tree Gun",
-      cost: 100,
+      cost: 75,
       hp: 100,
       img: "treeGun",
       desc: "Reliable derp shooter.",
