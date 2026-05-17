@@ -162,7 +162,7 @@ const CONFIG = {
     basic: {
       name: "Da Boiiiiii",
       hp: 90,
-      speed: 0.28,
+      speed: 0.14,
       damage: 10,
       img: "basicDerp"
     },
@@ -184,6 +184,15 @@ const CONFIG = {
     }
   },
 
+  mechaderp: {
+      name: "Mecha Derp",
+      hp: 200,
+      speed: 2,
+      damage: 50,
+      img: "mechaDerp"
+    }
+  },
+
   images: {
     campfr: "assets/plant-campfr.png",
     treeGun: "assets/plant-tree-gun.png",
@@ -194,6 +203,7 @@ const CONFIG = {
     basicDerp: "assets/enemy-basic-derp.png",
     armoredDerp: "assets/enemy-armored-derp.png",
     fastDerp: "assets/enemy-fast-derp.png",
+    mechaDerp: "assets/mechaderp.png",
 
     glow: "assets/resource-glow.png",
     grass: "assets/tile-grass.png"
