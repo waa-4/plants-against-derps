@@ -191,7 +191,7 @@ const CONFIG = {
       damage: 50,
       img: "mechaDerp"
     }
-  },
+  }
 
   images: {
     campfr: "assets/plant-campfr.png",
