@@ -393,6 +393,36 @@ const CONFIG = {
       lava: [[4, 0], [4, 1], [4, 3], [4, 4]]
     }
   ]
+},
+
+{
+      name: "2-1",
+      title: "Start of The Derp Ages",
+      desc: "Now fighting with machines.",
+      startGlow: 125,
+      waves: [
+        [
+          { type: "basic", row: 0, delay: 70 },
+          { type: "basic", row: 2, delay: 160 },
+          { type: "basic", row: 4, delay: 250 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 80 },
+          { type: "armored", row: 2, delay: 280 },
+          { type: "fast", row: 3, delay: 460 }
+        ],
+        [
+          { type: "armored", row: 0, delay: 110 },
+          { type: "armored", row: 4, delay: 270 },
+          { type: "fast", row: 2, delay: 430 }
+        ],
+        [
+          { type: "mechaderp", row: 3, delay: 530 }
+        ]
+      ],
+      lava: [[4, 0], [4, 1], [4, 3], [5, 1], [5, 4], [4, 4]]
+    }
+  ]
 };
 
 // ============================================================
