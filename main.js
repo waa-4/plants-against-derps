@@ -51,7 +51,7 @@ const CONFIG = {
       projectileSpeed: 4.5
     },
 
-    treeGun: {
+    rosegun: {
       name: "Rosegun",
       cost: 50,
       hp: 60,
