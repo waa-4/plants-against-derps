@@ -1038,5 +1038,29 @@ document.getElementById("restartLevel").addEventListener("click", () => {
   startLevel(state?.levelIndex || 0);
 });
 
+document.getElementById("fullscreenBtn").addEventListener("click", async () => {
+  const gameScreen = document.getElementById("gameScreen");
+
+  try {
+    if (!document.fullscreenElement) {
+      await gameScreen.requestFullscreen();
+      document.getElementById("fullscreenBtn").textContent = "Exit Fullscreen";
+    } else {
+      await document.exitFullscreen();
+      document.getElementById("fullscreenBtn").textContent = "Fullscreen";
+    }
+  } catch (err) {
+    console.warn("Fullscreen failed:", err);
+  }
+});
+
+document.addEventListener("fullscreenchange", () => {
+  const button = document.getElementById("fullscreenBtn");
+
+  if (!button) return;
+
+  button.textContent = document.fullscreenElement ? "Exit Fullscreen" : "Fullscreen";
+});
+
 initLevelButtons();
 showScreen("menu");
