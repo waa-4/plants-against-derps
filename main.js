@@ -1,4 +1,5 @@
-// Plants Against Derps - main.js v1.3 FIXED
+// Plants Against Derps - main.js v1.4
+// Full replacement.
 // Paste Part 1, then paste Part 2 directly under it.
 
 // ============================================================
@@ -28,7 +29,14 @@ const CONFIG = {
     campfrGlowAmount: 25,
     campfrGlowCooldown: 900,
     derpDefeatGlow: 5,
-    betweenWaveDelay: 240
+    betweenWaveDelay: 240,
+    winFadeTicks: 120
+  },
+
+  plantPicker: {
+    enabled: true,
+    title: "Pick the bullcrap",
+    maxPlants: 4
   },
 
   plants: {
@@ -38,6 +46,7 @@ const CONFIG = {
       hp: 80,
       img: "campfr",
       desc: "Makes Glow.",
+      placementCooldown: 180,
 
       producer: true,
       produceAmount: 25,
@@ -49,7 +58,8 @@ const CONFIG = {
       cost: 100,
       hp: 100,
       img: "treeGun",
-      desc: "Shoots derps.",
+      desc: "Reliable derp shooter.",
+      placementCooldown: 240,
 
       shooter: true,
       shootCooldown: 115,
@@ -68,6 +78,7 @@ const CONFIG = {
       hp: 60,
       img: "rosegun",
       desc: "Cheaper weaker Tree Gun.",
+      placementCooldown: 180,
 
       shooter: true,
       shootCooldown: 100,
@@ -80,17 +91,71 @@ const CONFIG = {
       doubleShotChance: 10
     },
 
+    soggyMattress: {
+      name: "Soggy Mattress",
+      cost: 50,
+      hp: 170,
+      img: "soggyMattress",
+      desc: "Weak wall. Smells defensive.",
+      placementCooldown: 300,
+
+      wall: true
+    },
+
     kaboom: {
       name: "El Kaboom",
       cost: 225,
       hp: 40,
       img: "kaboom",
-      desc: "Explodes.",
+      desc: "Explodes after a short fuse.",
+      placementCooldown: 600,
 
       fuse: 90,
       damage: 180,
       radius: 140
     }
+
+    /*
+    EASY FUTURE PLANT EXAMPLE:
+
+    tripleThing: {
+      name: "Triple Thing",
+      cost: 175,
+      hp: 80,
+      img: "tripleThing",
+      desc: "Shoots 3 lanes.",
+      placementCooldown: 300,
+
+      shooter: true,
+      shootCooldown: 130,
+      projectileDamage: 15,
+      projectileSpeed: 4.5,
+
+      multiLane: true,
+      areaDamage: false,
+      areaRadius: 0,
+      doubleShotChance: 0
+    },
+
+    boomShooter: {
+      name: "Boom Shooter",
+      cost: 200,
+      hp: 80,
+      img: "boomShooter",
+      desc: "Area damage projectile.",
+      placementCooldown: 360,
+
+      shooter: true,
+      shootCooldown: 170,
+      projectileDamage: 20,
+      projectileSpeed: 4,
+
+      multiLane: false,
+      areaDamage: true,
+      areaRadius: 70,
+      doubleShotChance: 0
+    },
+    */
   },
 
   enemies: {
@@ -123,10 +188,13 @@ const CONFIG = {
     campfr: "assets/plant-campfr.png",
     treeGun: "assets/plant-tree-gun.png",
     rosegun: "assets/rosegun.png",
+    soggyMattress: "assets/soggy-mattress.png",
     kaboom: "assets/plant-el-kaboom.png",
+
     basicDerp: "assets/enemy-basic-derp.png",
     armoredDerp: "assets/enemy-armored-derp.png",
     fastDerp: "assets/enemy-fast-derp.png",
+
     glow: "assets/resource-glow.png",
     grass: "assets/tile-grass.png"
   },
@@ -369,6 +437,13 @@ music.victory.volume = CONFIG.audio.victoryVolume;
 let audioUnlocked = false;
 let currentMusic = null;
 let state = null;
+let chosenPlants = Object.keys(CONFIG.plants).slice(0, CONFIG.plantPicker.maxPlants);
+
+const ui = {
+  picker: null,
+  fade: null,
+  credits: null
+};
 
 function unlockAudio() {
   if (audioUnlocked) return;
@@ -485,25 +560,528 @@ function initLevelButtons() {
     const button = document.createElement("button");
     button.className = "level-tile";
     button.textContent = `${level.name} - ${level.title}`;
-    button.addEventListener("click", () => startLevel(index));
+    button.addEventListener("click", () => {
+      if (CONFIG.plantPicker.enabled) {
+        openPlantPicker(index);
+      } else {
+        startLevel(index, chosenPlants);
+      }
+    });
     levelGridEl.appendChild(button);
   });
 }
+
 function initCards() {
   cardsEl.innerHTML = "";
 
-  for (const [id, plant] of Object.entries(CONFIG.plants)) {
+  const allowedPlants = chosenPlants.length > 0 ? chosenPlants : Object.keys(CONFIG.plants);
+
+  for (const id of allowedPlants) {
+    const plant = CONFIG.plants[id];
+    if (!plant) continue;
+
     const card = document.createElement("button");
     card.className = "card";
     card.dataset.plant = id;
+
+    const cooldownLeft = state?.placementCooldowns?.[id] || 0;
+    const cooldownText = cooldownLeft > 0 ? `<br><span>Cooldown: ${Math.ceil(cooldownLeft / 60)}s</span>` : "";
+
     card.innerHTML = `
       <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
       <b>${plant.name}</b>
       <span>${plant.cost} Glow</span><br>
       <span>${plant.desc}</span>
+      ${cooldownText}
     `;
+
+    if (cooldownLeft > 0) {
+      card.disabled = true;
+      card.style.opacity = "0.55";
+    }
+
     card.addEventListener("click", () => selectPlant(id));
     cardsEl.appendChild(card);
+  }
+}
+
+function openPlantPicker(levelIndex) {
+  createFloatingUI();
+
+  const max = CONFIG.plantPicker.maxPlants;
+  const selected = new Set(chosenPlants.slice(0, max));
+
+  ui.picker.innerHTML = `
+    <div class="pad-picker-box">
+      <h2>${CONFIG.plantPicker.title}</h2>
+      <p>Choose up to ${max} plants for this level.</p>
+      <div class="pad-picker-grid"></div>
+      <div class="pad-picker-buttons">
+        <button id="padStartLevel">Start Level</button>
+        <button id="padCancelPicker">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  const grid = ui.picker.querySelector(".pad-picker-grid");
+
+  for (const [id, plant] of Object.entries(CONFIG.plants)) {
+    const btn = document.createElement("button");
+    btn.className = "pad-picker-card";
+    btn.dataset.id = id;
+    btn.innerHTML = `
+      <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
+      <b>${plant.name}</b>
+      <span>${plant.cost} Glow</span>
+    `;
+
+    if (selected.has(id)) {
+      btn.classList.add("picked");
+    }
+
+    btn.addEventListener("click", () => {
+      if (selected.has(id)) {
+        selected.delete(id);
+      } else {
+        if (selected.size >= max) {
+          playSfx("no");
+          return;
+        }
+        selected.add(id);
+      }
+
+      btn.classList.toggle("picked", selected.has(id));
+    });
+
+    grid.appendChild(btn);
+  }
+
+  ui.picker.classList.add("show");
+
+  ui.picker.querySelector("#padStartLevel").onclick = () => {
+    if (selected.size <= 0) {
+      playSfx("no");
+      return;
+    }
+
+    chosenPlants = [...selected];
+    ui.picker.classList.remove("show");
+    startLevel(levelIndex, chosenPlants);
+  };
+
+  ui.picker.querySelector("#padCancelPicker").onclick = () => {
+    ui.picker.classList.remove("show");
+  };
+}
+
+function createFloatingUI() {
+  if (!ui.picker) {
+    ui.picker = document.createElement("div");
+    ui.picker.id = "padPickerOverlay";
+    document.body.appendChild(ui.picker);
+  }
+
+  if (!ui.fade) {
+    ui.fade = document.createElement("div");
+    ui.fade.id = "padFadeOverlay";
+    document.body.appendChild(ui.fade);
+  }
+
+  if (!ui.credits) {
+    ui.credits = document.createElement("div");
+    ui.credits.id = "padCreditsOverlay";
+    document.body.appendChild(ui.credits);
+  }
+
+  if (!document.getElementById("padDynamicStyle")) {
+    const style = document.createElement("style");
+    style.id = "padDynamicStyle";
+    style.textContent = `
+      #padPickerOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.78);
+        z-index: 9999;
+        display: none;
+        place-items: center;
+        color: white;
+        font-family: system-ui, Arial, sans-serif;
+      }
+
+      #padPickerOverlay.show {
+        display: grid;
+      }
+
+      .pad-picker-box {
+        width: min(850px, 92vw);
+        max-height: 88vh;
+        overflow: auto;
+        background: linear-gradient(135deg, rgba(45,160,220,0.35), rgba(0,0,0,0.92));
+        border: 2px solid rgba(160,240,255,0.9);
+        border-radius: 26px;
+        padding: 22px;
+        box-shadow: 0 0 40px rgba(80,220,255,0.3);
+      }
+
+      .pad-picker-box h2 {
+        margin-top: 0;
+        color: #bff7ff;
+      }
+
+      .pad-picker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+      }
+
+      .pad-picker-card {
+        background: #eee;
+        color: #111;
+        border: 4px solid #111;
+        border-radius: 14px;
+        padding: 8px;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .pad-picker-card.picked {
+        outline: 5px solid #ffe95a;
+        background: #fff9ba;
+      }
+
+      .pad-picker-card img {
+        width: 100%;
+        height: 80px;
+        object-fit: contain;
+        background: white;
+        border-radius: 8px;
+      }
+
+      .pad-picker-card span {
+        display: block;
+        font-size: 12px;
+      }
+
+      .pad-picker-buttons {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .pad-picker-buttons button {
+        padding: 12px 18px;
+        border-radius: 999px;
+        border: 1px solid white;
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      #padFadeOverlay {
+        position: fixed;
+        inset: 0;
+        background: black;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 9998;
+        transition: opacity 1.2s ease;
+      }
+
+      #padFadeOverlay.show {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      #padCreditsOverlay {
+        position: fixed;
+        inset: 0;
+        background: black;
+        color: white;
+        z-index: 10000;
+        display: none;
+        overflow: hidden;
+        font-family: monospace;
+      }
+
+      #padCreditsOverlay.show {
+        display: block;
+      }
+
+      .pad-credits-text {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        top: 100%;
+        font-size: clamp(24px, 5vw, 54px);
+        line-height: 1.55;
+        animation: padCreditsScroll 13s linear forwards;
+        padding: 0 8vw;
+      }
+
+      @keyframes padCreditsScroll {
+        from { top: 100%; }
+        to { top: -90%; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+function initCards() {
+  cardsEl.innerHTML = "";
+
+  const allowedPlants = chosenPlants.length > 0 ? chosenPlants : Object.keys(CONFIG.plants);
+
+  for (const id of allowedPlants) {
+    const plant = CONFIG.plants[id];
+    if (!plant) continue;
+
+    const card = document.createElement("button");
+    card.className = "card";
+    card.dataset.plant = id;
+
+    const cooldownLeft = state?.placementCooldowns?.[id] || 0;
+    const cooldownText = cooldownLeft > 0
+      ? `<br><span>Cooldown: ${Math.ceil(cooldownLeft / 60)}s</span>`
+      : "";
+
+    card.innerHTML = `
+      <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
+      <b>${plant.name}</b>
+      <span>${plant.cost} Glow</span><br>
+      <span>${plant.desc}</span>
+      ${cooldownText}
+    `;
+
+    if (cooldownLeft > 0) {
+      card.disabled = true;
+      card.style.opacity = "0.55";
+    }
+
+    card.addEventListener("click", () => selectPlant(id));
+    cardsEl.appendChild(card);
+  }
+}
+
+function openPlantPicker(levelIndex) {
+  createFloatingUI();
+
+  const max = CONFIG.plantPicker.maxPlants;
+  const selected = new Set(chosenPlants.slice(0, max));
+
+  ui.picker.innerHTML = `
+    <div class="pad-picker-box">
+      <h2>${CONFIG.plantPicker.title}</h2>
+      <p>Choose up to ${max} plants for this level.</p>
+      <div class="pad-picker-grid"></div>
+      <div class="pad-picker-buttons">
+        <button id="padStartLevel">Start Level</button>
+        <button id="padCancelPicker">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  const grid = ui.picker.querySelector(".pad-picker-grid");
+
+  for (const [id, plant] of Object.entries(CONFIG.plants)) {
+    const btn = document.createElement("button");
+    btn.className = "pad-picker-card";
+    btn.dataset.id = id;
+    btn.innerHTML = `
+      <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
+      <b>${plant.name}</b>
+      <span>${plant.cost} Glow</span>
+    `;
+
+    if (selected.has(id)) {
+      btn.classList.add("picked");
+    }
+
+    btn.addEventListener("click", () => {
+      if (selected.has(id)) {
+        selected.delete(id);
+      } else {
+        if (selected.size >= max) {
+          playSfx("no");
+          return;
+        }
+
+        selected.add(id);
+      }
+
+      btn.classList.toggle("picked", selected.has(id));
+    });
+
+    grid.appendChild(btn);
+  }
+
+  ui.picker.classList.add("show");
+
+  ui.picker.querySelector("#padStartLevel").onclick = () => {
+    if (selected.size <= 0) {
+      playSfx("no");
+      return;
+    }
+
+    chosenPlants = [...selected];
+    ui.picker.classList.remove("show");
+    startLevel(levelIndex, chosenPlants);
+  };
+
+  ui.picker.querySelector("#padCancelPicker").onclick = () => {
+    ui.picker.classList.remove("show");
+  };
+}
+
+function createFloatingUI() {
+  if (!ui.picker) {
+    ui.picker = document.createElement("div");
+    ui.picker.id = "padPickerOverlay";
+    document.body.appendChild(ui.picker);
+  }
+
+  if (!ui.fade) {
+    ui.fade = document.createElement("div");
+    ui.fade.id = "padFadeOverlay";
+    document.body.appendChild(ui.fade);
+  }
+
+  if (!ui.credits) {
+    ui.credits = document.createElement("div");
+    ui.credits.id = "padCreditsOverlay";
+    document.body.appendChild(ui.credits);
+  }
+
+  if (!document.getElementById("padDynamicStyle")) {
+    const style = document.createElement("style");
+    style.id = "padDynamicStyle";
+    style.textContent = `
+      #padPickerOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.78);
+        z-index: 9999;
+        display: none;
+        place-items: center;
+        color: white;
+        font-family: system-ui, Arial, sans-serif;
+      }
+
+      #padPickerOverlay.show {
+        display: grid;
+      }
+
+      .pad-picker-box {
+        width: min(850px, 92vw);
+        max-height: 88vh;
+        overflow: auto;
+        background: linear-gradient(135deg, rgba(45,160,220,0.35), rgba(0,0,0,0.92));
+        border: 2px solid rgba(160,240,255,0.9);
+        border-radius: 26px;
+        padding: 22px;
+        box-shadow: 0 0 40px rgba(80,220,255,0.3);
+      }
+
+      .pad-picker-box h2 {
+        margin-top: 0;
+        color: #bff7ff;
+      }
+
+      .pad-picker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+      }
+
+      .pad-picker-card {
+        background: #eee;
+        color: #111;
+        border: 4px solid #111;
+        border-radius: 14px;
+        padding: 8px;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .pad-picker-card.picked {
+        outline: 5px solid #ffe95a;
+        background: #fff9ba;
+      }
+
+      .pad-picker-card img {
+        width: 100%;
+        height: 80px;
+        object-fit: contain;
+        background: white;
+        border-radius: 8px;
+      }
+
+      .pad-picker-card span {
+        display: block;
+        font-size: 12px;
+      }
+
+      .pad-picker-buttons {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .pad-picker-buttons button {
+        padding: 12px 18px;
+        border-radius: 999px;
+        border: 1px solid white;
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      #padFadeOverlay {
+        position: fixed;
+        inset: 0;
+        background: black;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 9998;
+        transition: opacity 1.2s ease;
+      }
+
+      #padFadeOverlay.show {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      #padCreditsOverlay {
+        position: fixed;
+        inset: 0;
+        background: black;
+        color: white;
+        z-index: 10000;
+        display: none;
+        overflow: hidden;
+        font-family: monospace;
+      }
+
+      #padCreditsOverlay.show {
+        display: block;
+      }
+
+      .pad-credits-text {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        top: 100%;
+        font-size: clamp(24px, 5vw, 54px);
+        line-height: 1.55;
+        animation: padCreditsScroll 13s linear forwards;
+        padding: 0 8vw;
+      }
+
+      @keyframes padCreditsScroll {
+        from { top: 100%; }
+        to { top: -90%; }
+      }
+    `;
+    document.head.appendChild(style);
   }
 }
 
@@ -519,7 +1097,7 @@ function selectPlant(id) {
   say(`Selected ${CONFIG.plants[id].name}.`);
 }
 
-function startLevel(index) {
+function startLevel(index, plantLoadout = chosenPlants) {
   const level = CONFIG.levels[index];
 
   state = {
@@ -536,14 +1114,19 @@ function startLevel(index) {
     projectiles: [],
     explosions: [],
     particles: [],
-    selectedPlant: "campfr",
+    placementCooldowns: {},
+    selectedPlant: plantLoadout[0] || Object.keys(CONFIG.plants)[0],
     running: true,
     won: false,
     lost: false,
+    ending: false,
+    endTimer: 0,
     tick: 0,
     message: "Protect the lawn from questionable creatures.",
     messageTimer: 240
   };
+
+  chosenPlants = plantLoadout;
 
   for (let row = 0; row < ROWS; row++) {
     state.grid[row] = [];
@@ -568,11 +1151,9 @@ function startLevel(index) {
   showScreen("game");
   playMusic("battle");
   initCards();
-
-  const firstPlantId = Object.keys(CONFIG.plants)[0];
-  selectPlant(firstPlantId);
-
+  selectPlant(state.selectedPlant);
   updateHud();
+
   requestAnimationFrame(gameLoop);
 }
 
@@ -589,7 +1170,13 @@ function updateHud() {
 
   glowText.textContent = `Glow: ${state.glow}`;
   waveText.textContent = `Wave: ${Math.min(state.waveIndex + 1, state.level.waves.length)}/${state.level.waves.length}`;
-  statusText.textContent = state.lost ? "Lost" : state.won ? "Won" : "Derping";
+  statusText.textContent = state.lost
+    ? "Lost"
+    : state.won
+      ? "Won"
+      : state.ending
+        ? "Ending"
+        : "Derping";
 }
 
 function gridFromMouse(event) {
@@ -618,6 +1205,14 @@ function plantAt(row, col, type) {
 
   if (!plantDef) {
     say(`Unknown plant: ${type}`);
+    playSfx("no");
+    return;
+  }
+
+  const cooldownLeft = state.placementCooldowns[type] || 0;
+
+  if (cooldownLeft > 0) {
+    say(`${plantDef.name} cooldown: ${Math.ceil(cooldownLeft / 60)}s`);
     playSfx("no");
     return;
   }
@@ -654,9 +1249,11 @@ function plantAt(row, col, type) {
 
   cell.plant = plant;
   state.plants.push(plant);
+  state.placementCooldowns[type] = plantDef.placementCooldown || 0;
 
   say(`${plantDef.name} placed.`);
   playSfx("plant");
+  initCards();
   updateHud();
 }
 
@@ -699,7 +1296,7 @@ function gameLoop() {
   update();
   draw();
 
-  if (!state.lost && !state.won) {
+  if (!state.lost && !state.ending) {
     requestAnimationFrame(gameLoop);
   }
 }
@@ -711,6 +1308,7 @@ function update() {
     state.messageTimer--;
   }
 
+  updatePlacementCooldowns();
   updateWaves();
   updatePlants();
   updateProjectiles();
@@ -720,6 +1318,26 @@ function update() {
   updateHud();
 }
 
+function updatePlacementCooldowns() {
+  let changed = false;
+
+  for (const id of Object.keys(state.placementCooldowns)) {
+    if (state.placementCooldowns[id] > 0) {
+      state.placementCooldowns[id]--;
+      changed = true;
+    }
+  }
+
+  if (changed && state.tick % 30 === 0) {
+    initCards();
+    if (state.selectedPlant) {
+      document.querySelectorAll(".card").forEach(card => {
+        card.classList.toggle("selected", card.dataset.plant === state.selectedPlant);
+      });
+    }
+  }
+}
+
 function updateWaves() {
   if (state.waveIndex >= state.level.waves.length) {
     if (state.enemies.length === 0 && !state.won) {
@@ -727,6 +1345,7 @@ function updateWaves() {
       say("You won. The derps are confused forever.", 999999);
       playMusic("victory");
       playSfx("win");
+      beginLevelComplete();
     }
     return;
   }
@@ -758,6 +1377,53 @@ function updateWaves() {
       say("Next wave soon.");
     }
   }
+}
+
+function beginLevelComplete() {
+  createFloatingUI();
+
+  state.ending = true;
+  state.endTimer = CONFIG.balancing.winFadeTicks;
+
+  setTimeout(() => {
+    ui.fade.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+    const nextLevel = state.levelIndex + 1;
+
+    ui.fade.classList.remove("show");
+
+    if (nextLevel >= CONFIG.levels.length) {
+      showCredits();
+    } else {
+      startLevel(nextLevel, chosenPlants);
+    }
+  }, CONFIG.balancing.winFadeTicks * 16);
+}
+
+function showCredits() {
+  createFloatingUI();
+  stopAllMusic();
+
+  ui.credits.innerHTML = `
+    <div class="pad-credits-text">
+      thank.<br><br>
+      u win.<br><br>
+      no reward sad?<br><br>
+      you beat game!<br><br>
+      that matter.<br><br>
+      game may update.<br><br>
+      check out mor, fun trust.
+    </div>
+  `;
+
+  ui.credits.classList.add("show");
+
+  setTimeout(() => {
+    ui.credits.classList.remove("show");
+    showScreen("menu");
+  }, 14000);
 }
 
 function updatePlants() {
@@ -1105,7 +1771,7 @@ function drawParticles() {
 canvas.addEventListener("click", event => {
   unlockAudio();
 
-  if (!state || !state.running || state.lost || state.won) return;
+  if (!state || !state.running || state.lost || state.won || state.ending) return;
 
   const position = gridFromMouse(event);
 
@@ -1118,7 +1784,11 @@ document.addEventListener("click", unlockAudio);
 document.addEventListener("keydown", unlockAudio);
 
 document.getElementById("playBtn").addEventListener("click", () => {
-  startLevel(0);
+  if (CONFIG.plantPicker.enabled) {
+    openPlantPicker(0);
+  } else {
+    startLevel(0, chosenPlants);
+  }
 });
 
 document.getElementById("levelBtn").addEventListener("click", () => {
@@ -1142,7 +1812,11 @@ document.getElementById("backToMenu").addEventListener("click", () => {
 });
 
 document.getElementById("restartLevel").addEventListener("click", () => {
-  startLevel(state?.levelIndex || 0);
+  if (CONFIG.plantPicker.enabled) {
+    openPlantPicker(state?.levelIndex || 0);
+  } else {
+    startLevel(state?.levelIndex || 0, chosenPlants);
+  }
 });
 
 const fullscreenButton = document.getElementById("fullscreenBtn");
@@ -1169,5 +1843,6 @@ if (fullscreenButton) {
   });
 }
 
+createFloatingUI();
 initLevelButtons();
 showScreen("menu");
