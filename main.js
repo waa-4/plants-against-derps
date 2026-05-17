@@ -42,13 +42,24 @@ const CONFIG = {
 
     treeGun: {
       name: "Tree Gun",
-      cost: 150,
+      cost: 100,
       hp: 100,
       img: "treeGun",
       desc: "Shoots derps.",
       shootCooldown: 115,
       projectileDamage: 24,
       projectileSpeed: 4.5
+    },
+
+    treeGun: {
+      name: "Rosegun",
+      cost: 50,
+      hp: 60,
+      img: "rosegun",
+      desc: "Shoots derps in a worse way.",
+      shootCooldown: 115,
+      projectileDamage: 15,
+      projectileSpeed: 2
     },
 
     kaboom: {
