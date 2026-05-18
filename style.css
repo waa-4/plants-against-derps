@@ -67,3 +67,63 @@
     aspect-ratio: 900 / 520;
   }
 }
+/* v1.6 layout emergency fix */
+#gameWrap {
+  display: grid !important;
+  grid-template-columns: minmax(0, 900px) 300px !important;
+  grid-template-areas: "board cards" !important;
+  gap: 14px !important;
+  align-items: start !important;
+  justify-content: center !important;
+}
+
+#game {
+  grid-area: board !important;
+  width: 100% !important;
+  max-width: 900px !important;
+  height: auto !important;
+  aspect-ratio: 900 / 520 !important;
+}
+
+#cards {
+  grid-area: cards !important;
+  max-height: 560px !important;
+  overflow-y: auto !important;
+  display: block !important;
+}
+
+.card {
+  width: 100% !important;
+  margin-bottom: 8px !important;
+}
+
+/* Mobile fix */
+@media (max-width: 900px) {
+  #gameWrap {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 8px 20px !important;
+  }
+
+  #game {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #cards {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    max-height: none !important;
+    width: 100% !important;
+  }
+
+  .card {
+    min-width: 125px !important;
+    max-width: 125px !important;
+    flex: 0 0 125px !important;
+    margin-bottom: 0 !important;
+  }
+}
