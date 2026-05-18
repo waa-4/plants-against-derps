@@ -2661,12 +2661,7 @@ document.getElementById("backToMenu").addEventListener("click", () => {
   hardReturnToMenu();
 });
 
-  setTimeout(() => {
-    closeAllOverlays();
-    clearGlowDrops();
-    document.body.style.pointerEvents = "auto";
-  }, 100);
-});
+  
 
   setTimeout(() => {
     closeAllOverlays();
