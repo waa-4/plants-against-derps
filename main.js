@@ -1114,9 +1114,9 @@ function createFloatingUI() {
       }
 
       #padFadeOverlay.show {
-        opacity: 1;
-        pointer-events: all;
-      }
+  opacity: 1;
+  pointer-events: none;
+}
 
       #padCreditsOverlay {
         position: fixed;
@@ -1261,7 +1261,12 @@ function closeAllOverlays() {
   for (const overlay of Object.values(ui)) {
     if (overlay && overlay.classList) {
       overlay.classList.remove("show");
+    }
+
+    if (overlay && overlay.style) {
       overlay.style.pointerEvents = "";
+      overlay.style.opacity = "";
+      overlay.style.display = "";
     }
   }
 
@@ -1274,6 +1279,7 @@ function closeAllOverlays() {
   }
 
   document.body.style.pointerEvents = "auto";
+  document.documentElement.style.pointerEvents = "auto";
 }
 
 function clearGlowDrops() {
@@ -1313,35 +1319,9 @@ function stopGameLoop() {
 
 async function hardReturnToMenu() {
   stopGameLoop();
-  closeAllOverlays();
   clearGlowDrops();
-  stopAllMusic();
+  closeAllOverlays();
 
-  // Hard remove overlay blocking
-  for (const overlay of Object.values(ui)) {
-    if (overlay && overlay.style) {
-      overlay.classList.remove("show");
-      overlay.style.display = "";
-      overlay.style.pointerEvents = "none";
-    }
-  }
-
-  if (ui.glowLayer) {
-    ui.glowLayer.innerHTML = "";
-    ui.glowLayer.style.pointerEvents = "none";
-  }
-
-  if (ui.fade) {
-    ui.fade.classList.remove("show");
-    ui.fade.style.opacity = "0";
-    ui.fade.style.pointerEvents = "none";
-  }
-
-  document.body.style.pointerEvents = "auto";
-  document.documentElement.style.pointerEvents = "auto";
-
-  // Exit fullscreen when returning to menu.
-  // This avoids the browser locking input onto the old game fullscreen element.
   try {
     if (document.fullscreenElement) {
       await document.exitFullscreen();
@@ -1362,24 +1342,12 @@ async function hardReturnToMenu() {
     screens.menu.style.pointerEvents = "auto";
   }
 
+  document.body.style.pointerEvents = "auto";
+  document.documentElement.style.pointerEvents = "auto";
+
   playMusic(CONFIG.audio.menuTrack);
-
-  setTimeout(() => {
-    document.body.style.pointerEvents = "auto";
-    document.documentElement.style.pointerEvents = "auto";
-
-    for (const overlay of Object.values(ui)) {
-      if (overlay && overlay.style) {
-        overlay.classList.remove("show");
-        overlay.style.pointerEvents = "none";
-      }
-    }
-
-    if (screens.menu) {
-      screens.menu.style.pointerEvents = "auto";
-    }
-  }, 150);
 }
+
 function showScreen(name) {
   createFloatingUI();
   closeAllOverlays();
@@ -1401,6 +1369,7 @@ function showScreen(name) {
   }
 
   document.body.style.pointerEvents = "auto";
+  document.documentElement.style.pointerEvents = "auto";
 
   if (name === "menu" || name === "levels" || name === "how") {
     playMusic(CONFIG.audio.menuTrack);
@@ -2661,7 +2630,6 @@ document.getElementById("backToMenu").addEventListener("click", () => {
   hardReturnToMenu();
 });
 
-//TTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
 
 
 
