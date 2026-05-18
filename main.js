@@ -2661,13 +2661,9 @@ document.getElementById("backToMenu").addEventListener("click", () => {
   hardReturnToMenu();
 });
 
-  
+//TTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
 
-  setTimeout(() => {
-    closeAllOverlays();
-    document.body.style.pointerEvents = "auto";
-  }, 100);
-});
+
 
 document.getElementById("restartLevel").addEventListener("click", () => {
   if (!state) return;
