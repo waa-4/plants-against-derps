@@ -127,3 +127,8 @@
     margin-bottom: 0 !important;
   }
 }
+
+#padFadeOverlay.show {
+  opacity: 1;
+  pointer-events: none;
+}
