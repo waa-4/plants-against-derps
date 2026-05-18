@@ -4,7 +4,7 @@
 //
 // v1.6 changes:
 // - Background image system instead of grass/sand tile drawing
-// - Lava tiles still draw on top
+// - Lava tiles still draw on topF
 // - Cleaner config
 // - Assasin Rover fixed
 // - 2-2 fixed inside levels
@@ -1261,8 +1261,19 @@ function closeAllOverlays() {
   for (const overlay of Object.values(ui)) {
     if (overlay && overlay.classList) {
       overlay.classList.remove("show");
+      overlay.style.pointerEvents = "";
     }
   }
+
+  if (ui.fade) {
+    ui.fade.style.pointerEvents = "none";
+  }
+
+  if (ui.glowLayer) {
+    ui.glowLayer.style.pointerEvents = "none";
+  }
+
+  document.body.style.pointerEvents = "auto";
 }
 
 function clearGlowDrops() {
@@ -1281,9 +1292,23 @@ function stopGameLoop() {
   if (state) {
     state.running = false;
     state.ending = false;
+    state.won = false;
+    state.lost = false;
   }
 
   clearGlowDrops();
+
+  if (ui.fade) {
+    ui.fade.classList.remove("show");
+    ui.fade.style.pointerEvents = "none";
+  }
+
+  if (ui.glowLayer) {
+    ui.glowLayer.innerHTML = "";
+    ui.glowLayer.style.pointerEvents = "none";
+  }
+
+  document.body.style.pointerEvents = "auto";
 }
 
 function showScreen(name) {
@@ -2558,7 +2583,15 @@ document.getElementById("backFromHow").addEventListener("click", () => {
 });
 
 document.getElementById("backToMenu").addEventListener("click", () => {
+  stopGameLoop();
+  closeAllOverlays();
+  stopAllMusic();
   showScreen("menu");
+
+  setTimeout(() => {
+    closeAllOverlays();
+    document.body.style.pointerEvents = "auto";
+  }, 100);
 });
 
 document.getElementById("restartLevel").addEventListener("click", () => {
