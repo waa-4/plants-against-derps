@@ -1,6 +1,16 @@
-// Plants Against Derps - main.js v1.5
+// Plants Against Derps - main.js v1.6
 // Full replacement.
-// Paste Part 1, then Part 2, then Part 3 directly underneath.
+// Paste Part 1, then Part 2, then Part 3, then Part 4 directly underneath.
+//
+// v1.6 changes:
+// - Background image system instead of grass/sand tile drawing
+// - Lava tiles still draw on top
+// - Cleaner config
+// - Assasin Rover fixed
+// - 2-2 fixed inside levels
+// - Menu re-entry softlock fix
+// - Better mobile scaling through injected CSS
+// - Missing image protection
 
 // ============================================================
 // EASY CONFIG - edit this first
@@ -9,17 +19,17 @@ const CONFIG = {
   audio: {
     enabled: true,
 
-    // Add more songs here.
-    // For your desert song, upload it to audio/deserttheme.m4a
     tracks: {
       menu: "audio/mainmenubeat.m4a",
       battle: "audio/derpbattle1.m4a",
       victory: "audio/derpvictorytheme.m4a",
-      desert: "audio/deserttheme.m4a"
+      desert: "audio/deserttheme.m4a",
+      world1: "audio/PAD-Theme1Remaster.m4a",
+      finalBoss: "audio/nerd-final-boss-theme.m4a"
     },
 
     menuTrack: "menu",
-    defaultBattleTrack: "battle",
+    defaultBattleTrack: "world1",
     victoryTrack: "victory",
 
     musicVolume: 0.45,
@@ -28,7 +38,7 @@ const CONFIG = {
   },
 
   save: {
-    key: "plantsAgainstDerpsSave_v1_5"
+    key: "plantsAgainstDerpsSave_v1_6"
   },
 
   currency: {
@@ -38,10 +48,15 @@ const CONFIG = {
   },
 
   board: {
+    canvasW: 900,
+    canvasH: 520,
+
     rows: 5,
     cols: 9,
+
     cellW: 86,
     cellH: 82,
+
     gridX: 80,
     gridY: 78
   },
@@ -53,7 +68,6 @@ const CONFIG = {
     betweenWaveDelay: 240,
     winFadeTicks: 120,
 
-    // Removing a plant drops this percent of the original cost.
     removeRefundPercent: 0.5
   },
 
@@ -65,12 +79,9 @@ const CONFIG = {
 
   upgrades: {
     maxLevel: 5,
-
-    // Every plant upgrade costs this much more each level.
     baseCost: 30,
     costPerLevel: 25,
 
-    // Simple upgrade effects.
     hpBoostPerLevel: 15,
     damageBoostPerLevel: 4,
     producerBoostPerLevel: 5
@@ -106,8 +117,22 @@ const CONFIG = {
         name: "Mor Enjoyer",
         cost: 150,
         desc: "You checked out mor. Fun trust."
+      },
+
+      backgroundEnjoyer: {
+        name: "Background Enjoyer",
+        cost: 175,
+        desc: "You witnessed the lawn become not just tiles."
       }
     }
+  },
+
+  backgrounds: {
+    forest: "assets/bg-forest.png",
+    desert: "assets/bg-desert.png",
+    cloud: "assets/bg-cloud.png",
+    milkyway: "assets/bg-milkyway.png",
+    chess: "assets/bg-chess.png"
   },
 
   plants: {
@@ -194,6 +219,29 @@ const CONFIG = {
       damage: 180,
       radius: 140
     }
+
+    /*
+    EASY FUTURE CHAOS PLANT EXAMPLE:
+
+    chaosRose: {
+      name: "Chaos Rose",
+      cost: 150,
+      hp: 70,
+      img: "chaosRose",
+      desc: "Sometimes double fires.",
+      placementCooldown: 300,
+
+      shooter: true,
+      shootCooldown: 130,
+      projectileDamage: 16,
+      projectileSpeed: 5,
+
+      multiLane: false,
+      areaDamage: false,
+      areaRadius: 0,
+      doubleShotChance: 25
+    },
+    */
   },
 
   enemies: {
@@ -221,6 +269,15 @@ const CONFIG = {
       img: "fastDerp"
     },
 
+    assasinRover: {
+      name: "Assasin Rover",
+      hp: 1,
+      speed: 0.75,
+      damage: 50,
+      img: "assasinRover",
+      fragile: true
+    },
+
     mechaDerp: {
       name: "Mecha Derp",
       hp: 600,
@@ -243,11 +300,10 @@ const CONFIG = {
     basicDerp: "assets/enemy-basic-derp.png",
     armoredDerp: "assets/enemy-armored-derp.png",
     fastDerp: "assets/enemy-fast-derp.png",
+    assasinRover: "assets/assasin-rover.png",
     mechaDerp: "assets/mechaderp.png",
 
-    glow: "assets/resource-glow.png",
-    grass: "assets/tile-grass.png",
-    sand: "assets/tile-sand.png"
+    glow: "assets/resource-glow.png"
   },
 
   levels: [
@@ -256,7 +312,8 @@ const CONFIG = {
       title: "First Derp",
       desc: "A regular lawn with regular bad decisions.",
       startGlow: 75,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [{ type: "basic", row: 2, delay: 120 }],
         [
@@ -264,8 +321,7 @@ const CONFIG = {
           { type: "basic", row: 3, delay: 220 }
         ]
       ],
-      lava: [],
-      sand: []
+      lava: []
     },
 
     {
@@ -273,7 +329,8 @@ const CONFIG = {
       title: "Two Derps Maybe",
       desc: "More derps walk at you. Horrifying.",
       startGlow: 75,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [
           { type: "basic", row: 0, delay: 80 },
@@ -284,8 +341,7 @@ const CONFIG = {
           { type: "fast", row: 3, delay: 250 }
         ]
       ],
-      lava: [],
-      sand: []
+      lava: []
     },
 
     {
@@ -293,7 +349,8 @@ const CONFIG = {
       title: "Fast Boi Test",
       desc: "Fast Da Boiiiiii joins the argument.",
       startGlow: 100,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [{ type: "fast", row: 1, delay: 120 }],
         [
@@ -302,8 +359,7 @@ const CONFIG = {
           { type: "basic", row: 4, delay: 420 }
         ]
       ],
-      lava: [],
-      sand: []
+      lava: []
     },
 
     {
@@ -311,7 +367,8 @@ const CONFIG = {
       title: "Armor Moment",
       desc: "Armored Da Boiiiiii is mildly rude.",
       startGlow: 100,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [{ type: "armored", row: 2, delay: 180 }],
         [
@@ -319,8 +376,7 @@ const CONFIG = {
           { type: "armored", row: 3, delay: 300 }
         ]
       ],
-      lava: [],
-      sand: []
+      lava: []
     },
 
     {
@@ -328,7 +384,8 @@ const CONFIG = {
       title: "Mor Level Preview",
       desc: "Lava tiles exist. Do not plant there.",
       startGlow: 125,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [
           { type: "basic", row: 0, delay: 100 },
@@ -339,8 +396,7 @@ const CONFIG = {
           { type: "armored", row: 3, delay: 360 }
         ]
       ],
-      lava: [[4, 1], [4, 2], [4, 3]],
-      sand: []
+      lava: [[4, 1], [4, 2], [4, 3]]
     },
 
     {
@@ -348,7 +404,8 @@ const CONFIG = {
       title: "Kaboom Lessons",
       desc: "El Kaboom solves problems loudly.",
       startGlow: 150,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [
           { type: "basic", row: 1, delay: 80 },
@@ -357,8 +414,7 @@ const CONFIG = {
         ],
         [{ type: "armored", row: 2, delay: 170 }]
       ],
-      lava: [],
-      sand: []
+      lava: []
     },
 
     {
@@ -366,7 +422,8 @@ const CONFIG = {
       title: "Lawn Malfunction",
       desc: "This lawn is not inspected.",
       startGlow: 150,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [
           { type: "fast", row: 0, delay: 120 },
@@ -377,16 +434,15 @@ const CONFIG = {
           { type: "armored", row: 2, delay: 320 }
         ]
       ],
-      lava: [[2, 0], [6, 4]],
-      sand: []
+      lava: [[2, 0], [6, 4]]
     },
-
-    {
+        {
       name: "1-8",
       title: "Derp Stack",
       desc: "Many derps. Concerning quantity.",
       startGlow: 175,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [
           { type: "basic", row: 0, delay: 80 },
@@ -399,8 +455,7 @@ const CONFIG = {
           { type: "armored", row: 1, delay: 400 }
         ]
       ],
-      lava: [],
-      sand: []
+      lava: []
     },
 
     {
@@ -408,7 +463,8 @@ const CONFIG = {
       title: "Actual Problem",
       desc: "The derps found shoes.",
       startGlow: 200,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [
           { type: "fast", row: 0, delay: 80 },
@@ -420,8 +476,7 @@ const CONFIG = {
           { type: "armored", row: 3, delay: 360 }
         ]
       ],
-      lava: [[3, 2], [5, 2]],
-      sand: []
+      lava: [[3, 2], [5, 2]]
     },
 
     {
@@ -429,7 +484,8 @@ const CONFIG = {
       title: "The Derpening",
       desc: "Final level of world 1. Very serious.",
       startGlow: 225,
-      music: "battle",
+      music: "world1",
+      background: "forest",
       waves: [
         [
           { type: "basic", row: 0, delay: 70 },
@@ -447,8 +503,7 @@ const CONFIG = {
           { type: "fast", row: 2, delay: 430 }
         ]
       ],
-      lava: [[4, 0], [4, 1], [4, 3], [4, 4]],
-      sand: []
+      lava: [[4, 0], [4, 1], [4, 3], [4, 4]]
     },
 
     {
@@ -457,6 +512,7 @@ const CONFIG = {
       desc: "Now fighting with machines.",
       startGlow: 125,
       music: "desert",
+      background: "desert",
       waves: [
         [
           { type: "basic", row: 0, delay: 70 },
@@ -477,14 +533,38 @@ const CONFIG = {
           { type: "mechaDerp", row: 3, delay: 530 }
         ]
       ],
-      lava: [[4, 0], [4, 1], [4, 3], [5, 1], [5, 4], [4, 4]],
-      sand: [
-        [0, 0], [1, 0], [2, 0], [3, 0], [6, 0], [7, 0], [8, 0],
-        [0, 1], [1, 1], [2, 1], [3, 1], [6, 1], [7, 1], [8, 1],
-        [0, 2], [1, 2], [2, 2], [3, 2], [5, 2], [6, 2], [7, 2], [8, 2],
-        [0, 3], [1, 3], [2, 3], [3, 3], [5, 3], [6, 3], [7, 3], [8, 3],
-        [0, 4], [1, 4], [2, 4], [3, 4], [6, 4], [7, 4], [8, 4]
-      ]
+      lava: [[4, 0], [4, 1], [4, 3], [5, 1], [5, 4], [4, 4]]
+    },
+
+    {
+      name: "2-2",
+      title: "Derpday",
+      desc: "The Derp's birthday. We are here to ruin it.",
+      startGlow: 125,
+      music: "desert",
+      background: "desert",
+      waves: [
+        [
+          { type: "armored", row: 0, delay: 70 },
+          { type: "basic", row: 4, delay: 250 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 80 },
+          { type: "armored", row: 2, delay: 280 },
+          { type: "fast", row: 4, delay: 280 },
+          { type: "fast", row: 3, delay: 460 }
+        ],
+        [
+          { type: "armored", row: 0, delay: 110 },
+          { type: "armored", row: 4, delay: 270 },
+          { type: "fast", row: 2, delay: 430 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 530 },
+          { type: "assasinRover", row: 3, delay: 760 }
+        ]
+      ],
+      lava: [[4, 0], [4, 1], [4, 3], [5, 1], [5, 4], [1, 3], [4, 4]]
     }
   ],
 
@@ -493,8 +573,9 @@ const CONFIG = {
       name: "M-1",
       title: "Best Use Is Boom",
       desc: "Lots of bosses. Kaboom is probably the answer.",
-      startGlow: 700,
+      startGlow: 5000,
       music: "battle",
+      background: "milkyway",
       waves: [
         [
           { type: "armored", row: 0, delay: 80 },
@@ -511,8 +592,7 @@ const CONFIG = {
           { type: "mechaDerp", row: 4, delay: 460 }
         ]
       ],
-      lava: [],
-      sand: []
+      lava: []
     },
 
     {
@@ -521,6 +601,7 @@ const CONFIG = {
       desc: "You only have the far left to work with.",
       startGlow: 250,
       music: "battle",
+      background: "cloud",
       waves: [
         [
           { type: "basic", row: 0, delay: 80 },
@@ -541,8 +622,7 @@ const CONFIG = {
         [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2],
         [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3],
         [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4]
-      ],
-      sand: []
+      ]
     },
 
     {
@@ -551,6 +631,7 @@ const CONFIG = {
       desc: "Create 1000 Glow total while fast derps rush you.",
       startGlow: 50,
       music: "battle",
+      background: "forest",
       goalGlowProduced: 1000,
       waves: [
         [
@@ -572,11 +653,36 @@ const CONFIG = {
           { type: "fast", row: 0, delay: 500 }
         ]
       ],
-      lava: [],
-      sand: []
+      lava: []
+    },
+
+    {
+      name: "M-4",
+      title: "Chess Problem",
+      desc: "The derps learned board games. Bad sign.",
+      startGlow: 300,
+      music: "battle",
+      background: "chess",
+      waves: [
+        [
+          { type: "basic", row: 0, delay: 100 },
+          { type: "basic", row: 2, delay: 180 },
+          { type: "basic", row: 4, delay: 260 }
+        ],
+        [
+          { type: "assasinRover", row: 1, delay: 140 },
+          { type: "assasinRover", row: 3, delay: 320 },
+          { type: "armored", row: 2, delay: 520 }
+        ],
+        [
+          { type: "mechaDerp", row: 2, delay: 260 }
+        ]
+      ],
+      lava: [[4, 2]]
     }
   ]
 };
+
 // ============================================================
 // GAME CODE - usually do not edit below this line
 // ============================================================
@@ -589,6 +695,9 @@ const screens = {
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+
+canvas.width = CONFIG.board.canvasW;
+canvas.height = CONFIG.board.canvasH;
 
 const cardsEl = document.getElementById("cards");
 const levelGridEl = document.getElementById("levelGrid");
@@ -612,6 +721,12 @@ for (const [key, src] of Object.entries(CONFIG.images)) {
   images[key].src = src;
 }
 
+const backgrounds = {};
+for (const [key, src] of Object.entries(CONFIG.backgrounds)) {
+  backgrounds[key] = new Image();
+  backgrounds[key].src = src;
+}
+
 const music = {};
 for (const [trackName, src] of Object.entries(CONFIG.audio.tracks)) {
   music[trackName] = new Audio(src);
@@ -625,6 +740,7 @@ let audioUnlocked = false;
 let currentMusic = null;
 let currentLevelList = "levels";
 let state = null;
+let activeLoopId = 0;
 
 let SAVE = {
   twigs: 0,
@@ -673,6 +789,10 @@ function saveGame() {
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function imageReady(img) {
+  return img && img.complete && img.naturalWidth > 0;
 }
 
 function getPlantLevel(id) {
@@ -734,7 +854,6 @@ function playMusic(name) {
   track.currentTime = 0;
   track.play().catch(() => {});
 }
-
 function playSfx(type) {
   if (!CONFIG.audio.enabled) return;
 
@@ -799,33 +918,6 @@ function playSfx(type) {
   } catch (err) {}
 }
 
-function showScreen(name) {
-  createFloatingUI();
-  closeAllOverlays();
-
-  if (state) {
-    state.running = false;
-  }
-
-  for (const screen of Object.values(screens)) {
-    screen.classList.remove("active");
-  }
-
-  screens[name].classList.add("active");
-
-  if (name === "menu" || name === "levels" || name === "how") {
-    playMusic(CONFIG.audio.menuTrack);
-  }
-}
-
-function closeAllOverlays() {
-  for (const overlay of Object.values(ui)) {
-    if (overlay && overlay.classList) {
-      overlay.classList.remove("show");
-    }
-  }
-}
-
 function createFloatingUI() {
   if (!ui.picker) {
     ui.picker = document.createElement("div");
@@ -873,6 +965,49 @@ function createFloatingUI() {
     const style = document.createElement("style");
     style.id = "padDynamicStyle";
     style.textContent = `
+      html, body {
+        min-height: 100%;
+        overflow-x: hidden;
+      }
+
+      #gameScreen.active {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        overflow: auto;
+      }
+
+      #gameWrap {
+        width: 100%;
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 210px;
+        gap: 12px;
+        align-items: start;
+      }
+
+      #game {
+        width: 100%;
+        max-width: 900px;
+        height: auto;
+        aspect-ratio: 900 / 520;
+        display: block;
+        touch-action: manipulation;
+      }
+
+      #cards {
+        max-height: min(72vh, 560px);
+        overflow-y: auto;
+      }
+
+      #topHud,
+      #gameBottom {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 44px;
+      }
+
       #padPickerOverlay,
       #padShopOverlay,
       #padUpgradeOverlay,
@@ -886,6 +1021,7 @@ function createFloatingUI() {
         color: white;
         font-family: system-ui, Arial, sans-serif;
         padding: 18px;
+        box-sizing: border-box;
       }
 
       #padPickerOverlay.show,
@@ -904,6 +1040,7 @@ function createFloatingUI() {
         border-radius: 26px;
         padding: 22px;
         box-shadow: 0 0 40px rgba(80,220,255,0.3);
+        box-sizing: border-box;
       }
 
       .pad-box h2 {
@@ -1005,6 +1142,7 @@ function createFloatingUI() {
         line-height: 1.55;
         animation: padCreditsScroll 13s linear forwards;
         padding: 0 8vw;
+        box-sizing: border-box;
       }
 
       @keyframes padCreditsScroll {
@@ -1036,18 +1174,68 @@ function createFloatingUI() {
         cursor: pointer;
       }
 
-      @media (max-width: 800px) {
+      @media (max-width: 900px) {
+        #gameScreen.active {
+          min-height: 100svh;
+        }
+
+        #gameWrap {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+          padding: 0 8px 18px;
+          box-sizing: border-box;
+        }
+
+        #cards {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          max-height: none;
+          padding: 8px 4px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .card {
+          min-width: 125px;
+          max-width: 125px;
+          flex: 0 0 125px;
+          font-size: 12px;
+        }
+
+        .card img {
+          max-height: 54px;
+          object-fit: contain;
+        }
+
+        #game {
+          max-width: 100%;
+          width: 100%;
+          height: auto;
+        }
+
+        #topHud,
+        #gameBottom {
+          font-size: 13px;
+          gap: 6px;
+          padding: 6px;
+        }
+
         #padPickerOverlay,
         #padShopOverlay,
         #padUpgradeOverlay,
         #padMinigameOverlay {
           align-items: start;
           overflow: auto;
+          padding: 10px;
         }
 
         .pad-box {
-          margin-top: 10px;
-          padding: 16px;
+          margin-top: 8px;
+          padding: 14px;
           border-radius: 18px;
         }
 
@@ -1066,6 +1254,56 @@ function createFloatingUI() {
       }
     `;
     document.head.appendChild(style);
+  }
+}
+
+function closeAllOverlays() {
+  for (const overlay of Object.values(ui)) {
+    if (overlay && overlay.classList) {
+      overlay.classList.remove("show");
+    }
+  }
+}
+
+function clearGlowDrops() {
+  if (state) {
+    state.glowDrops = [];
+  }
+
+  if (ui.glowLayer) {
+    ui.glowLayer.innerHTML = "";
+  }
+}
+
+function stopGameLoop() {
+  activeLoopId++;
+
+  if (state) {
+    state.running = false;
+    state.ending = false;
+  }
+
+  clearGlowDrops();
+}
+
+function showScreen(name) {
+  createFloatingUI();
+  closeAllOverlays();
+
+  if (name !== "game") {
+    stopGameLoop();
+  }
+
+  for (const screen of Object.values(screens)) {
+    if (screen) screen.classList.remove("active");
+  }
+
+  if (screens[name]) {
+    screens[name].classList.add("active");
+  }
+
+  if (name === "menu" || name === "levels" || name === "how") {
+    playMusic(CONFIG.audio.menuTrack);
   }
 }
 
@@ -1121,7 +1359,11 @@ function openPlantPicker(levelIndex, listName = "levels") {
   createFloatingUI();
 
   const max = CONFIG.plantPicker.maxPlants;
-  const selected = new Set(chosenPlants.filter(id => CONFIG.plants[id] && !CONFIG.plants[id].tool).slice(0, max));
+  const selected = new Set(
+    chosenPlants
+      .filter(id => CONFIG.plants[id] && !CONFIG.plants[id].tool)
+      .slice(0, max)
+  );
 
   ui.picker.innerHTML = `
     <div class="pad-box">
@@ -1318,13 +1560,13 @@ function openUpgrades() {
 function initCards() {
   cardsEl.innerHTML = "";
 
-  const allowedPlants = chosenPlants.length > 0 ? chosenPlants : ["removeTool", "campfr", "treeGun", "rosegun"];
+  const allowedPlants = chosenPlants.length > 0
+    ? chosenPlants
+    : ["removeTool", "campfr", "treeGun", "rosegun"];
 
   for (const id of allowedPlants) {
     const plant = CONFIG.plants[id];
     if (!plant) continue;
-
-    const stats = getPlantStats(id) || plant;
 
     const card = document.createElement("button");
     card.className = "card";
@@ -1370,6 +1612,10 @@ function selectPlant(id) {
 
 function startLevel(index, plantLoadout = chosenPlants, listName = "levels") {
   createFloatingUI();
+  closeAllOverlays();
+
+  activeLoopId++;
+  const myLoopId = activeLoopId;
 
   const levelList = listName === "minigames" ? CONFIG.minigames : CONFIG.levels;
   const level = levelList[index];
@@ -1382,15 +1628,18 @@ function startLevel(index, plantLoadout = chosenPlants, listName = "levels") {
   currentLevelList = listName;
 
   state = {
+    loopId: myLoopId,
     levelIndex: index,
     levelList: listName,
     level,
     glow: level.startGlow,
     glowProducedTotal: 0,
+
     waveIndex: 0,
     waveTimer: 0,
     waveSpawnIndex: 0,
     betweenWaveTimer: 180,
+
     grid: [],
     plants: [],
     enemies: [],
@@ -1399,13 +1648,16 @@ function startLevel(index, plantLoadout = chosenPlants, listName = "levels") {
     particles: [],
     glowDrops: [],
     placementCooldowns: {},
+
     selectedPlant: plantLoadout[0] || "removeTool",
+
     running: true,
     won: false,
     lost: false,
     ending: false,
     endTimer: 0,
     tick: 0,
+
     message: "Protect the lawn from questionable creatures.",
     messageTimer: 240
   };
@@ -1419,21 +1671,15 @@ function startLevel(index, plantLoadout = chosenPlants, listName = "levels") {
 
     for (let col = 0; col < COLS; col++) {
       state.grid[row][col] = {
-        tile: "grass",
-        plant: null
+        plant: null,
+        lava: false
       };
-    }
-  }
-
-  for (const [col, row] of level.sand || []) {
-    if (state.grid[row] && state.grid[row][col]) {
-      state.grid[row][col].tile = "sand";
     }
   }
 
   for (const [col, row] of level.lava || []) {
     if (state.grid[row] && state.grid[row][col]) {
-      state.grid[row][col].tile = "lava";
+      state.grid[row][col].lava = true;
     }
   }
 
@@ -1441,8 +1687,9 @@ function startLevel(index, plantLoadout = chosenPlants, listName = "levels") {
   levelDescEl.textContent = level.desc;
 
   for (const screen of Object.values(screens)) {
-    screen.classList.remove("active");
+    if (screen) screen.classList.remove("active");
   }
+
   screens.game.classList.add("active");
 
   playMusic(level.music || CONFIG.audio.defaultBattleTrack);
@@ -1450,15 +1697,19 @@ function startLevel(index, plantLoadout = chosenPlants, listName = "levels") {
   initCards();
   selectPlant(state.selectedPlant);
   updateHud();
+  renderGlowDrops();
 
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(() => gameLoop(myLoopId));
 }
 function say(text, time = 180) {
   if (!state) return;
 
   state.message = text;
   state.messageTimer = time;
-  messageEl.textContent = text;
+
+  if (messageEl) {
+    messageEl.textContent = text;
+  }
 }
 
 function updateHud() {
@@ -1481,6 +1732,7 @@ function updateHud() {
 
 function gridFromMouse(event) {
   const rect = canvas.getBoundingClientRect();
+
   const mouseX = (event.clientX - rect.left) * (canvas.width / rect.width);
   const mouseY = (event.clientY - rect.top) * (canvas.height / rect.height);
 
@@ -1522,7 +1774,7 @@ function plantAt(row, col, type) {
     return;
   }
 
-  if (cell.tile === "lava") {
+  if (cell.lava) {
     say("You cannot plant on lava. Mor Level says no.");
     playSfx("no");
     return;
@@ -1576,7 +1828,11 @@ function removePlantAt(row, col) {
 
   const plant = cell.plant;
   const def = CONFIG.plants[plant.id];
-  const refund = Math.max(1, Math.floor((plant.originalCost || def?.cost || 0) * CONFIG.balancing.removeRefundPercent));
+
+  const refund = Math.max(
+    1,
+    Math.floor((plant.originalCost || def?.cost || 0) * CONFIG.balancing.removeRefundPercent)
+  );
 
   cell.plant = null;
   state.plants = state.plants.filter(current => current !== plant);
@@ -1599,7 +1855,10 @@ function createGlowDrop(row, col, amount) {
 }
 
 function renderGlowDrops() {
-  if (!ui.glowLayer || !state) return;
+  if (!ui.glowLayer || !state || !screens.game.classList.contains("active")) {
+    if (ui.glowLayer) ui.glowLayer.innerHTML = "";
+    return;
+  }
 
   ui.glowLayer.innerHTML = "";
 
@@ -1619,8 +1878,11 @@ function renderGlowDrops() {
     el.style.top = `${y - 18}px`;
 
     el.onclick = () => {
+      if (!state || !state.running) return;
+
       state.glow += drop.amount;
       state.glowDrops = state.glowDrops.filter(current => current !== drop);
+
       playSfx("glow");
       renderGlowDrops();
       updateHud();
@@ -1663,15 +1925,16 @@ function spawnEnemy(type, row) {
   });
 }
 
-function gameLoop() {
-  if (!state || !screens.game.classList.contains("active")) return;
+function gameLoop(loopId) {
+  if (!state || loopId !== activeLoopId) return;
+  if (!screens.game.classList.contains("active")) return;
 
   update();
   draw();
   renderGlowDrops();
 
   if (state.running && !state.lost && !state.ending) {
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(() => gameLoop(loopId));
   }
 }
 
@@ -1719,6 +1982,7 @@ function updateWaves() {
     if (state.enemies.length === 0 && !state.won && !state.level.goalGlowProduced) {
       completeLevel();
     }
+
     return;
   }
 
@@ -1754,12 +2018,18 @@ function updateWaves() {
 function checkSpecialGoals() {
   if (state.won || state.lost || state.ending) return;
 
-  if (state.level.goalGlowProduced && state.glowProducedTotal >= state.level.goalGlowProduced && state.enemies.length === 0) {
+  if (
+    state.level.goalGlowProduced &&
+    state.glowProducedTotal >= state.level.goalGlowProduced &&
+    state.enemies.length === 0
+  ) {
     completeLevel();
   }
 }
 
 function completeLevel() {
+  if (state.won || state.ending) return;
+
   state.won = true;
 
   const reward = randomInt(CONFIG.currency.minReward, CONFIG.currency.maxReward);
@@ -1779,10 +2049,13 @@ function beginLevelComplete() {
   state.endTimer = CONFIG.balancing.winFadeTicks;
 
   setTimeout(() => {
+    if (!state || !state.ending) return;
     ui.fade.classList.add("show");
   }, 100);
 
   setTimeout(() => {
+    if (!state) return;
+
     const nextLevel = state.levelIndex + 1;
 
     ui.fade.classList.remove("show");
@@ -1967,11 +2240,13 @@ function updateEnemies() {
       if (enemy.biteCooldown <= 0) {
         plant.hp -= enemy.damage;
         enemy.biteCooldown = 60;
+
         popParticle(
           GRID_X + col * CELL_W + CELL_W / 2,
           GRID_Y + enemy.row * CELL_H + CELL_H / 2,
           "#ff4444"
         );
+
         playSfx("hit");
 
         if (plant.hp <= 0) {
@@ -2057,20 +2332,11 @@ function popParticle(x, y, color) {
   });
 }
 
-function clearGlowDrops() {
-  if (state) {
-    state.glowDrops = [];
-  }
-
-  if (ui.glowLayer) {
-    ui.glowLayer.innerHTML = "";
-  }
-}
-
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  drawBoard();
+  drawBackground();
+  drawLavaTiles();
   drawPlants();
   drawEnemies();
   drawProjectiles();
@@ -2078,46 +2344,53 @@ function draw() {
   drawParticles();
 }
 
-function imageReady(img) {
-  return img && img.complete && img.naturalWidth > 0;
-}
+function drawBackground() {
+  const backgroundKey = state?.level?.background || "forest";
+  const bg = backgrounds[backgroundKey];
 
-function drawBoard() {
+  if (imageReady(bg)) {
+    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+    return;
+  }
+
   ctx.fillStyle = "#5fb846";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
-      const x = GRID_X + col * CELL_W;
-      const y = GRID_Y + row * CELL_H;
+      if ((row + col) % 2 === 0) {
+        ctx.fillRect(
+          GRID_X + col * CELL_W,
+          GRID_Y + row * CELL_H,
+          CELL_W,
+          CELL_H
+        );
+      }
+    }
+  }
+}
+
+function drawLavaTiles() {
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
       const cell = state.grid[row][col];
 
-      if (cell.tile === "lava") {
-        ctx.fillStyle = "#e85b17";
-        ctx.fillRect(x, y, CELL_W, CELL_H);
+      if (!cell.lava) continue;
 
-        ctx.fillStyle = "#ffdd44";
-        ctx.fillRect(x + 8, y + 28, CELL_W - 16, 8);
-      } else if (cell.tile === "sand") {
-        if (imageReady(images.sand)) {
-          ctx.drawImage(images.sand, x + 4, y + 4, CELL_W - 8, CELL_H - 8);
-        } else {
-          ctx.fillStyle = "#d8bd72";
-          ctx.fillRect(x, y, CELL_W, CELL_H);
-          ctx.fillStyle = "#b79a55";
-          ctx.fillRect(x + 12, y + 14, CELL_W - 24, 5);
-          ctx.fillRect(x + 22, y + 48, CELL_W - 30, 4);
-        }
-      } else if (imageReady(images.grass)) {
-        ctx.drawImage(images.grass, x + 4, y + 4, CELL_W - 8, CELL_H - 8);
-      } else {
-        ctx.fillStyle = (row + col) % 2 ? "#6fcc50" : "#72d455";
-        ctx.fillRect(x, y, CELL_W, CELL_H);
-      }
+      const x = GRID_X + col * CELL_W;
+      const y = GRID_Y + row * CELL_H;
 
-      ctx.strokeStyle = "#1c8c39";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x, y, CELL_W, CELL_H);
+      ctx.fillStyle = "rgba(232, 91, 23, 0.78)";
+      ctx.fillRect(x, y, CELL_W, CELL_H);
+
+      ctx.fillStyle = "rgba(255, 221, 68, 0.9)";
+      ctx.fillRect(x + 8, y + 28, CELL_W - 16, 8);
+
+      ctx.strokeStyle = "rgba(130, 20, 0, 0.95)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x + 2, y + 2, CELL_W - 4, CELL_H - 4);
     }
   }
 }
@@ -2146,7 +2419,12 @@ function drawPlants() {
       ctx.fillRect(x + 8, y + CELL_H - 10, CELL_W - 24, 5);
 
       ctx.fillStyle = "#46ff46";
-      ctx.fillRect(x + 8, y + CELL_H - 10, (CELL_W - 24) * (plant.hp / plant.maxHp), 5);
+      ctx.fillRect(
+        x + 8,
+        y + CELL_H - 10,
+        (CELL_W - 24) * Math.max(0, plant.hp / plant.maxHp),
+        5
+      );
     }
   }
 }
@@ -2161,10 +2439,10 @@ function drawEnemies() {
     if (imageReady(img)) {
       ctx.drawImage(img, enemy.x - size / 2, enemy.y - size / 2, size, size);
     } else {
-      ctx.fillStyle = def?.boss ? "#888" : "#eee";
+      ctx.fillStyle = def?.boss ? "#888" : def?.fragile ? "#111" : "#eee";
       ctx.fillRect(enemy.x - size / 4, enemy.y - size / 2.7, size / 2, size * 0.72);
 
-      ctx.fillStyle = "#111";
+      ctx.fillStyle = def?.fragile ? "#ff2222" : "#111";
       ctx.font = "10px monospace";
       ctx.fillText(def?.name?.slice(0, 8) || "enemy", enemy.x - 22, enemy.y);
     }
@@ -2172,7 +2450,7 @@ function drawEnemies() {
     ctx.fillStyle = "#000";
     ctx.fillRect(enemy.x - 28, enemy.y - 54, 56, 6);
 
-    ctx.fillStyle = def?.boss ? "#ffbb33" : "#ff3333";
+    ctx.fillStyle = def?.boss ? "#ffbb33" : def?.fragile ? "#ff2020" : "#ff3333";
     ctx.fillRect(enemy.x - 28, enemy.y - 54, 56 * Math.max(0, enemy.hp / enemy.maxHp), 6);
   }
 }
@@ -2215,6 +2493,27 @@ canvas.addEventListener("click", event => {
 
   plantAt(position.row, position.col, state.selectedPlant);
 });
+
+canvas.addEventListener("touchstart", event => {
+  unlockAudio();
+
+  if (!state || !state.running || state.lost || state.won || state.ending) return;
+
+  const touch = event.touches[0];
+  if (!touch) return;
+
+  const fakeEvent = {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  };
+
+  const position = gridFromMouse(fakeEvent);
+
+  if (!position) return;
+
+  event.preventDefault();
+  plantAt(position.row, position.col, state.selectedPlant);
+}, { passive: false });
 
 window.addEventListener("resize", () => {
   renderGlowDrops();
@@ -2259,7 +2558,6 @@ document.getElementById("backFromHow").addEventListener("click", () => {
 });
 
 document.getElementById("backToMenu").addEventListener("click", () => {
-  clearGlowDrops();
   showScreen("menu");
 });
 
@@ -2289,6 +2587,7 @@ if (fullscreenButton) {
 
   document.addEventListener("fullscreenchange", () => {
     fullscreenButton.textContent = document.fullscreenElement ? "Exit Fullscreen" : "Fullscreen";
+    setTimeout(renderGlowDrops, 100);
   });
 }
 
