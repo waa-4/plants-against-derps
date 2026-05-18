@@ -1320,12 +1320,18 @@ function showScreen(name) {
   }
 
   for (const screen of Object.values(screens)) {
-    if (screen) screen.classList.remove("active");
+    if (screen) {
+      screen.classList.remove("active");
+      screen.style.pointerEvents = "none";
+    }
   }
 
   if (screens[name]) {
     screens[name].classList.add("active");
+    screens[name].style.pointerEvents = "auto";
   }
+
+  document.body.style.pointerEvents = "auto";
 
   if (name === "menu" || name === "levels" || name === "how") {
     playMusic(CONFIG.audio.menuTrack);
@@ -2585,8 +2591,15 @@ document.getElementById("backFromHow").addEventListener("click", () => {
 document.getElementById("backToMenu").addEventListener("click", () => {
   stopGameLoop();
   closeAllOverlays();
-  stopAllMusic();
+  clearGlowDrops();
   showScreen("menu");
+
+  setTimeout(() => {
+    closeAllOverlays();
+    clearGlowDrops();
+    document.body.style.pointerEvents = "auto";
+  }, 100);
+});
 
   setTimeout(() => {
     closeAllOverlays();
@@ -2603,11 +2616,9 @@ const fullscreenButton = document.getElementById("fullscreenBtn");
 
 if (fullscreenButton) {
   fullscreenButton.addEventListener("click", async () => {
-    const gameScreen = document.getElementById("gameScreen");
-
     try {
       if (!document.fullscreenElement) {
-        await gameScreen.requestFullscreen();
+        await document.documentElement.requestFullscreen();
         fullscreenButton.textContent = "Exit Fullscreen";
       } else {
         await document.exitFullscreen();
