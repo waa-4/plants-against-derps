@@ -1396,8 +1396,8 @@ function openMinigames() {
     grid.appendChild(btn);
   });
 
-  ui.picker.style.pointerEvents = "auto";
-ui.picker.classList.add("show");
+  ui.minigames.style.pointerEvents = "auto";
+ui.minigames.classList.add("show");
 
   ui.minigames.querySelector("#padCloseMinigames").onclick = () => {
     ui.minigames.classList.remove("show");
@@ -1417,77 +1417,7 @@ function openPlantPicker(levelIndex, listName = "levels") {
   startLevel(levelIndex, chosenPlants, listName);
 }
 
-  ui.picker.innerHTML = `
-    <div class="pad-box">
-      <h2>${CONFIG.plantPicker.title}</h2>
-      <p>Choose up to ${max} plants. The remove tool is always included.</p>
-      <div class="pad-grid" id="padPickerGrid"></div>
-      <div class="pad-buttons">
-        <button id="padStartLevel">Start Level</button>
-        <button id="padCancelPicker">Cancel</button>
-      </div>
-    </div>
-  `;
-
-  const grid = ui.picker.querySelector("#padPickerGrid");
-
-  for (const [id, plant] of Object.entries(CONFIG.plants)) {
-    if (plant.tool) continue;
-
-    const btn = document.createElement("button");
-    btn.className = "pad-card";
-    btn.dataset.id = id;
-
-    const level = getPlantLevel(id);
-
-    btn.innerHTML = `
-      <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
-      <b>${plant.name}</b>
-      <span>${plant.cost} Glow</span>
-      <span>Lv ${level}/${CONFIG.upgrades.maxLevel}</span>
-    `;
-
-    if (selected.has(id)) {
-      btn.classList.add("picked");
-    }
-
-    btn.addEventListener("click", () => {
-      if (selected.has(id)) {
-        selected.delete(id);
-      } else {
-        if (selected.size >= max) {
-          playSfx("no");
-          return;
-        }
-
-        selected.add(id);
-      }
-
-      btn.classList.toggle("picked", selected.has(id));
-    });
-
-    grid.appendChild(btn);
-  }
-
-  ui.picker.style.pointerEvents = "";
-  ui.picker.classList.add("show");
-
-  ui.picker.querySelector("#padStartLevel").onclick = () => {
-    if (selected.size <= 0) {
-      playSfx("no");
-      return;
-    }
-
-    chosenPlants = ["removeTool", ...selected];
-    ui.picker.classList.remove("show");
-    currentLevelList = listName;
-    startLevel(levelIndex, chosenPlants, listName);
-  };
-
-  ui.picker.querySelector("#padCancelPicker").onclick = () => {
-    ui.picker.classList.remove("show");
-  };
-}
+  
 
 
 function openShop() {
