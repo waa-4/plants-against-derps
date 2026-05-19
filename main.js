@@ -1466,6 +1466,7 @@ function openPlantPicker(levelIndex, listName = "levels") {
     grid.appendChild(btn);
   }
 
+  ui.picker.style.pointerEvents = "";
   ui.picker.classList.add("show");
 
   ui.picker.querySelector("#padStartLevel").onclick = () => {
@@ -1484,6 +1485,7 @@ function openPlantPicker(levelIndex, listName = "levels") {
     ui.picker.classList.remove("show");
   };
 }
+
 
 function openShop() {
   createFloatingUI();
