@@ -1405,14 +1405,17 @@ ui.picker.classList.add("show");
 }
 
 function openPlantPicker(levelIndex, listName = "levels") {
-  createFloatingUI();
+  // Emergency bypass: skips the broken picker menu and starts the level directly.
+  chosenPlants = [
+    "removeTool",
+    "campfr",
+    "treeGun",
+    "rosegun",
+    "soggyMattress"
+  ];
 
-  const max = CONFIG.plantPicker.maxPlants;
-  const selected = new Set(
-    chosenPlants
-      .filter(id => CONFIG.plants[id] && !CONFIG.plants[id].tool)
-      .slice(0, max)
-  );
+  startLevel(levelIndex, chosenPlants, listName);
+}
 
   ui.picker.innerHTML = `
     <div class="pad-box">
