@@ -2965,48 +2965,7 @@ function showUpgrades() {
   document.getElementById("backBtn").onclick = showMenu;
 }
 
-  const grid = document.getElementById("upgradeGrid");
-
-  for (const [id, plant] of Object.entries(CONFIG.plants)) {
-    if (plant.tool) continue;
-
-    const level = getPlantLevel(id);
-    const maxed = level >= CONFIG.upgrades.maxLevel;
-    const cost = getUpgradeCost(id);
-
-    const btn = document.createElement("button");
-    btn.className = "tile-btn";
-    btn.innerHTML = `
-      ${plant.name}
-      <small>Level ${level}/${CONFIG.upgrades.maxLevel}</small>
-      <small>${plant.desc}</small>
-      <small>${maxed ? "Maxed" : `Upgrade cost: ${cost} Twigs`}</small>
-    `;
-
-    btn.addEventListener("click", () => {
-      if (maxed) {
-        playSfx("no");
-        return;
-      }
-
-      if (save.twigs < cost) {
-        playSfx("no");
-        alert("Not enough Twigs.");
-        return;
-      }
-
-      save.twigs -= cost;
-      save.upgrades[id] = level + 1;
-      saveGame();
-      playSfx("glow");
-      showUpgrades();
-    });
-
-    grid.appendChild(btn);
-  }
-
-  document.getElementById("backBtn").onclick = showMenu;
-}
+  
 
 function showMeetDaWhatever() {
   setScreen("meet", `
