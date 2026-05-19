@@ -25,7 +25,7 @@ const CONFIG = {
       victory: "audio/derpvictorytheme.m4a",
       desert: "audio/deserttheme.m4a",
       world1: "audio/PAD-Theme1Remaster.m4a",
-      finalBoss: "audio/nerd-final-boss-theme.m4a"
+      finalBoss: "audio/nerd.m4a"
     },
 
     menuTrack: "menu",
@@ -1259,27 +1259,20 @@ function createFloatingUI() {
 
 function closeAllOverlays() {
   for (const overlay of Object.values(ui)) {
-    if (overlay && overlay.classList) {
-      overlay.classList.remove("show");
-    }
+    if (!overlay) continue;
 
-    if (overlay && overlay.style) {
-      overlay.style.pointerEvents = "";
-      overlay.style.opacity = "";
-      overlay.style.display = "";
-    }
-  }
-
-  if (ui.fade) {
-    ui.fade.style.pointerEvents = "none";
+    overlay.classList.remove("show");
+    overlay.style.pointerEvents = "";
+    overlay.style.opacity = "";
+    overlay.style.display = "";
   }
 
   if (ui.glowLayer) {
-    ui.glowLayer.style.pointerEvents = "none";
+    ui.glowLayer.innerHTML = "";
   }
 
-  document.body.style.pointerEvents = "auto";
-  document.documentElement.style.pointerEvents = "auto";
+  document.body.style.pointerEvents = "";
+  document.documentElement.style.pointerEvents = "";
 }
 
 function clearGlowDrops() {
@@ -1298,23 +1291,9 @@ function stopGameLoop() {
   if (state) {
     state.running = false;
     state.ending = false;
-    state.won = false;
-    state.lost = false;
   }
 
   clearGlowDrops();
-
-  if (ui.fade) {
-    ui.fade.classList.remove("show");
-    ui.fade.style.pointerEvents = "none";
-  }
-
-  if (ui.glowLayer) {
-    ui.glowLayer.innerHTML = "";
-    ui.glowLayer.style.pointerEvents = "none";
-  }
-
-  document.body.style.pointerEvents = "auto";
 }
 
 async function hardReturnToMenu() {
@@ -1417,7 +1396,8 @@ function openMinigames() {
     grid.appendChild(btn);
   });
 
-  ui.minigames.classList.add("show");
+  ui.minigames.style.pointerEvents = "auto";
+ui.minigames.classList.add("show");
 
   ui.minigames.querySelector("#padCloseMinigames").onclick = () => {
     ui.minigames.classList.remove("show");
