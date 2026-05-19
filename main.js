@@ -1396,8 +1396,8 @@ function openMinigames() {
     grid.appendChild(btn);
   });
 
-  ui.minigames.style.pointerEvents = "auto";
-ui.minigames.classList.add("show");
+  ui.picker.style.pointerEvents = "auto";
+ui.picker.classList.add("show");
 
   ui.minigames.querySelector("#padCloseMinigames").onclick = () => {
     ui.minigames.classList.remove("show");
