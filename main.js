@@ -1328,11 +1328,15 @@ function showMenu() {
   const menuButtons = document.getElementById("menuButtons");
 
   menuButtons.appendChild(menuButton("Play Story", () => startLevel(0, "levels")));
-  menuButtons.appendChild(menuButton("Level Selectr", showLevelSelect));
-  menuButtons.appendChild(menuButton("Minigames", showMinigames));
-  menuButtons.appendChild(menuButton("Twig Shop", showShop));
-  menuButtons.appendChild(menuButton("Upgrade Plants", showUpgrades));
-  menuButtons.appendChild(menuButton("Meet Da Whatever", showMeetDaWhatever));
+menuButtons.appendChild(menuButton("Level Selectr", showLevelSelect));
+menuButtons.appendChild(menuButton("Custom Levels", showCustomLevels));
+menuButtons.appendChild(menuButton("PAD Modder", () => {
+  window.location.href = "./mod/";
+}));
+menuButtons.appendChild(menuButton("Minigames", showMinigames));
+menuButtons.appendChild(menuButton("Twig Shop", showShop));
+menuButtons.appendChild(menuButton("Upgrade Plants", showUpgrades));
+menuButtons.appendChild(menuButton("Meet Da Whatever", showMeetDaWhatever));
 }
 
 function showLevelSelect() {
@@ -1358,6 +1362,174 @@ function showLevelSelect() {
     btn.addEventListener("click", () => startLevel(index, "levels"));
     grid.appendChild(btn);
   });
+
+  document.getElementById("backBtn").onclick = showMenu;
+}
+
+const CUSTOM_LEVEL_KEY = "pad_custom_levels_v1";
+
+function loadCustomLevels() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_LEVEL_KEY);
+    const levels = JSON.parse(raw || "[]");
+    return Array.isArray(levels) ? levels : [];
+  } catch (err) {
+    console.warn("Could not load custom levels:", err);
+    return [];
+  }
+}
+
+function saveCustomLevels(levels) {
+  localStorage.setItem(CUSTOM_LEVEL_KEY, JSON.stringify(levels));
+}
+
+function encodeLevel(level) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(level))));
+}
+
+function decodeLevel(code) {
+  return JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+}
+
+function cleanImportedLevel(level) {
+  const safe = {
+    name: String(level.name || "Custom").slice(0, 24),
+    title: String(level.title || "Imported Level").slice(0, 50),
+    desc: String(level.desc || "Imported custom level.").slice(0, 120),
+    startGlow: Math.max(0, Math.min(5000, Number(level.startGlow) || 200)),
+    background: CONFIG.backgrounds[level.background] ? level.background : "forest",
+    music: CONFIG.audio.tracks[level.music] ? level.music : "battle",
+    waves: Array.isArray(level.waves) ? level.waves.slice(0, 5) : [[]],
+    lava: Array.isArray(level.lava) ? level.lava : []
+  };
+
+  safe.lava = safe.lava
+    .filter(pair => Array.isArray(pair) && pair.length >= 2)
+    .map(pair => [
+      Math.max(0, Math.min(8, Number(pair[0]) || 0)),
+      Math.max(0, Math.min(4, Number(pair[1]) || 0))
+    ]);
+
+  safe.waves = safe.waves.map(wave => {
+    if (!Array.isArray(wave)) return [];
+
+    return wave.slice(0, 12).map(enemy => {
+      const type = CONFIG.enemies[enemy.type] ? enemy.type : "basic";
+
+      return {
+        type,
+        row: Math.max(0, Math.min(4, Number(enemy.row) || 0)),
+        delay: Math.max(30, Math.min(1200, Number(enemy.delay) || 120))
+      };
+    });
+  });
+
+  if (safe.waves.length <= 0) {
+    safe.waves = [[{ type: "basic", row: 2, delay: 120 }]];
+  }
+
+  return safe;
+}
+
+function showCustomLevels() {
+  const customLevels = loadCustomLevels();
+
+  setScreen("custom", `
+    <section class="panel">
+      <h2>Custom Levels</h2>
+      <p>Import share codes from PAD Modder, save them here, and play them.</p>
+
+      <div class="form-grid">
+        <label class="wide">
+          Import Share Code
+          <textarea id="customImportBox" placeholder="Paste PAD Modder share code here..."></textarea>
+        </label>
+      </div>
+
+      <br>
+
+      <button class="bubble-btn" id="importCustomBtn">Import Level</button>
+      <button class="bubble-btn" id="openModderBtn">Open PAD Modder</button>
+
+      <br><br>
+
+      <h2>Saved Custom Levels</h2>
+      <div class="grid-list" id="customGrid"></div>
+
+      <br>
+      <button class="bubble-btn" id="backBtn">Back</button>
+    </section>
+  `);
+
+  const grid = document.getElementById("customGrid");
+
+  if (customLevels.length === 0) {
+    grid.innerHTML = `
+      <p class="hint">No custom levels imported yet. Make one in PAD Modder, export it, then paste the code here.</p>
+    `;
+  } else {
+    customLevels.forEach((level, index) => {
+      const btn = document.createElement("button");
+      btn.className = "tile-btn";
+      btn.innerHTML = `
+        ${level.name}: ${level.title}
+        <small>${level.desc}</small>
+        <small>Background: ${level.background} | Waves: ${level.waves.length}</small>
+      `;
+
+      btn.addEventListener("click", () => {
+        startCustomLevel(level, index, "custom");
+      });
+
+      grid.appendChild(btn);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "tile-btn";
+      deleteBtn.innerHTML = `
+        Delete ${level.name}
+        <small>Removes this custom level from your browser.</small>
+      `;
+
+      deleteBtn.addEventListener("click", () => {
+        if (!confirm(`Delete ${level.name}?`)) return;
+
+        const levels = loadCustomLevels();
+        levels.splice(index, 1);
+        saveCustomLevels(levels);
+        showCustomLevels();
+      });
+
+      grid.appendChild(deleteBtn);
+    });
+  }
+
+  document.getElementById("importCustomBtn").onclick = () => {
+    const box = document.getElementById("customImportBox");
+    const code = box.value.trim();
+
+    if (!code) {
+      alert("Paste a share code first.");
+      return;
+    }
+
+    try {
+      const imported = cleanImportedLevel(decodeLevel(code));
+      const levels = loadCustomLevels();
+
+      levels.push(imported);
+      saveCustomLevels(levels);
+
+      alert(`Imported: ${imported.title}`);
+      showCustomLevels();
+    } catch (err) {
+      console.warn("Import failed:", err);
+      alert("Import failed. The share code might be broken.");
+    }
+  };
+
+  document.getElementById("openModderBtn").onclick = () => {
+    window.location.href = "./mod/";
+  };
 
   document.getElementById("backBtn").onclick = showMenu;
 }
