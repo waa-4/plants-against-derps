@@ -77,7 +77,13 @@ const CONFIG = {
     armoredDerp: "assets/enemy-armored-derp.png",
     fastDerp: "assets/enemy-fast-derp.png",
     assasinRover: "assets/assasin-rover.png",
-    mechaDerp: "assets/mechaderp.png"
+    mechaDerp: "assets/mechaderp.png",
+    alien: "assets/alien.png",
+    alienGod: "assets/aliengod.png",
+    alienFinalBoss: "assets/alienfinalboss.png",
+    alienGun: "assets/aliengun.png",
+    droneGun: "assets/dronegun.png",
+    droneSaw: "assets/dronesaw.png",
   },
 
   upgrades: {
@@ -224,7 +230,63 @@ const CONFIG = {
       img: "mechaDerp",
       desc: "A boss derp with machine energy. Big problem.",
       boss: true
-    }
+    },
+
+    droneGun: {
+  name: "Drone Gun",
+  hp: 90,
+  speed: 0.28,
+  damage: 10,
+  img: "droneGun",
+  desc: "A flying drone with suspiciously good aim."
+},
+
+droneSaw: {
+  name: "Drone Saw",
+  hp: 70,
+  speed: 0.55,
+  damage: 22,
+  img: "droneSaw",
+  desc: "Rushes plants and saws them down. Very rude."
+},
+
+alien: {
+  name: "Odd Alien",
+  hp: 130,
+  speed: 0.20,
+  damage: 12,
+  img: "alien",
+  desc: "A strange alien that showed up during the evacuation."
+},
+
+alienGun: {
+  name: "Alien Gunner",
+  hp: 150,
+  speed: 0.16,
+  damage: 16,
+  img: "alienGun",
+  desc: "Shoots from range once ranged enemies are added."
+},
+
+alienGod: {
+  name: "Alien God",
+  hp: 900,
+  speed: 0.12,
+  damage: 35,
+  img: "alienGod",
+  boss: true,
+  desc: "A cosmic thing that thinks the lawn belongs to it."
+},
+
+alienFinalBoss: {
+  name: "The Star-Eyed One",
+  hp: 1800,
+  speed: 0.10,
+  damage: 45,
+  img: "alienFinalBoss",
+  boss: true,
+  desc: "The final space boss. Probably not friendly."
+}
   },
 
   shopBadges: {
@@ -256,7 +318,9 @@ const CONFIG = {
       name: "Background Enjoyer",
       cost: 175,
       desc: "You witnessed the lawn become more than tiles."
-    }
+    },
+
+    
   },
 
   defaultLoadout: [
@@ -720,7 +784,344 @@ const CONFIG = {
   lava: [[3, 0], [3, 2], [3, 4], [6, 1], [6, 3]]
 },
 
-    
+    {
+  name: "2-10",
+  title: "Derp Factory Shutdown",
+  desc: "Final desert level. Turn the machines into scrap before they escape upward.",
+  startGlow: 800,
+  background: "desert",
+  music: "desert",
+  waves: [
+    [
+      { type: "armored", row: 0, delay: 80 },
+      { type: "armored", row: 2, delay: 180 },
+      { type: "armored", row: 4, delay: 280 }
+    ],
+    [
+      { type: "fast", row: 1, delay: 90 },
+      { type: "assasinRover", row: 3, delay: 250 },
+      { type: "mechaDerp", row: 2, delay: 430 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 170 },
+      { type: "mechaDerp", row: 4, delay: 330 },
+      { type: "assasinRover", row: 2, delay: 520 }
+    ],
+    [
+      { type: "mechaDerp", row: 1, delay: 240 },
+      { type: "mechaDerp", row: 2, delay: 420 },
+      { type: "mechaDerp", row: 3, delay: 600 },
+      { type: "assasinRover", row: 0, delay: 820 },
+      { type: "assasinRover", row: 4, delay: 900 }
+    ]
+  ],
+  lava: [[4, 0], [4, 1], [4, 3], [4, 4], [6, 2]]
+},
+
+{
+  name: "3-1",
+  title: "Evacuation Gone Wrong",
+  desc: "The clouds were supposed to be safe. They were not.",
+  startGlow: 175,
+  background: "cloud",
+  music: "world1",
+  waves: [
+    [
+      { type: "basic", row: 2, delay: 100 },
+      { type: "fast", row: 1, delay: 240 },
+      { type: "fast", row: 3, delay: 380 }
+    ],
+    [
+      { type: "droneSaw", row: 0, delay: 160 },
+      { type: "basic", row: 2, delay: 300 },
+      { type: "droneSaw", row: 4, delay: 460 }
+    ],
+    [
+      { type: "armored", row: 1, delay: 160 },
+      { type: "droneSaw", row: 3, delay: 360 },
+      { type: "fast", row: 2, delay: 520 }
+    ]
+  ],
+  lava: [[4, 1], [4, 3]]
+},
+
+{
+  name: "3-2",
+  title: "Cloud Traffic",
+  desc: "The sky has lanes now. Nobody is following them.",
+  startGlow: 200,
+  background: "cloud",
+  music: "menu",
+  waves: [
+    [
+      { type: "fast", row: 0, delay: 90 },
+      { type: "fast", row: 4, delay: 210 }
+    ],
+    [
+      { type: "droneSaw", row: 1, delay: 120 },
+      { type: "droneSaw", row: 3, delay: 260 },
+      { type: "basic", row: 2, delay: 390 }
+    ],
+    [
+      { type: "armored", row: 0, delay: 160 },
+      { type: "armored", row: 4, delay: 320 },
+      { type: "droneSaw", row: 2, delay: 500 }
+    ]
+  ],
+  lava: [[5, 2]]
+},
+
+{
+  name: "3-3",
+  title: "Drone Delivery Failure",
+  desc: "Nobody ordered this many flying problems.",
+  startGlow: 250,
+  background: "cloud",
+  music: "battle",
+  waves: [
+    [
+      { type: "droneSaw", row: 1, delay: 100 },
+      { type: "droneSaw", row: 3, delay: 190 },
+      { type: "basic", row: 2, delay: 300 }
+    ],
+    [
+      { type: "assasinRover", row: 0, delay: 120 },
+      { type: "assasinRover", row: 4, delay: 250 },
+      { type: "droneSaw", row: 2, delay: 390 },
+      { type: "armored", row: 2, delay: 560 }
+    ],
+    [
+      { type: "mechaDerp", row: 1, delay: 240 },
+      { type: "mechaDerp", row: 3, delay: 480 },
+      { type: "droneSaw", row: 2, delay: 680 }
+    ]
+  ],
+  lava: [[3, 0], [3, 4], [6, 2]]
+},
+
+{
+  name: "3-4",
+  title: "Alien Airspace",
+  desc: "The derps were bad. The aliens are worse.",
+  startGlow: 275,
+  background: "cloud",
+  music: "desert",
+  waves: [
+    [
+      { type: "alien", row: 0, delay: 120 },
+      { type: "alien", row: 2, delay: 240 },
+      { type: "alien", row: 4, delay: 360 }
+    ],
+    [
+      { type: "droneSaw", row: 1, delay: 120 },
+      { type: "fast", row: 3, delay: 260 },
+      { type: "alien", row: 2, delay: 430 }
+    ],
+    [
+      { type: "alien", row: 0, delay: 170 },
+      { type: "armored", row: 2, delay: 320 },
+      { type: "alien", row: 4, delay: 470 }
+    ]
+  ],
+  lava: [[4, 1], [5, 1], [4, 3], [5, 3]]
+},
+
+{
+  name: "3-5",
+  title: "Pew Pew Panic",
+  desc: "Some aliens remembered they have weapons.",
+  startGlow: 300,
+  background: "cloud",
+  music: "world1",
+  waves: [
+    [
+      { type: "alienGun", row: 2, delay: 180 }
+    ],
+    [
+      { type: "alien", row: 0, delay: 100 },
+      { type: "alienGun", row: 1, delay: 260 },
+      { type: "droneSaw", row: 4, delay: 420 }
+    ],
+    [
+      { type: "alienGun", row: 3, delay: 160 },
+      { type: "droneSaw", row: 1, delay: 320 },
+      { type: "armored", row: 2, delay: 500 }
+    ],
+    [
+      { type: "alienGun", row: 0, delay: 220 },
+      { type: "alienGun", row: 4, delay: 420 },
+      { type: "fast", row: 2, delay: 620 }
+    ]
+  ],
+  lava: [[2, 2], [6, 2]]
+},
+
+{
+  name: "3-6",
+  title: "Emergency Exit Blocked",
+  desc: "The evacuation path is blocked by drones, aliens, and bad planning.",
+  startGlow: 325,
+  background: "cloud",
+  music: "menu",
+  waves: [
+    [
+      { type: "droneSaw", row: 0, delay: 90 },
+      { type: "droneSaw", row: 4, delay: 210 },
+      { type: "alien", row: 2, delay: 360 }
+    ],
+    [
+      { type: "alienGun", row: 1, delay: 140 },
+      { type: "alienGun", row: 3, delay: 300 },
+      { type: "fast", row: 2, delay: 460 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 220 },
+      { type: "alien", row: 2, delay: 420 },
+      { type: "mechaDerp", row: 4, delay: 620 }
+    ],
+    [
+      { type: "assasinRover", row: 1, delay: 180 },
+      { type: "assasinRover", row: 3, delay: 320 },
+      { type: "alienGun", row: 2, delay: 520 }
+    ]
+  ],
+  lava: [[3, 1], [3, 3], [5, 1], [5, 3]]
+},
+
+{
+  name: "3-7",
+  title: "Floating Platform Incident",
+  desc: "Several platforms are gone. Please pretend this is fine.",
+  startGlow: 350,
+  background: "cloud",
+  music: "desert",
+  waves: [
+    [
+      { type: "alien", row: 1, delay: 100 },
+      { type: "alien", row: 3, delay: 230 }
+    ],
+    [
+      { type: "droneSaw", row: 0, delay: 80 },
+      { type: "droneSaw", row: 2, delay: 210 },
+      { type: "droneSaw", row: 4, delay: 340 }
+    ],
+    [
+      { type: "alienGun", row: 1, delay: 150 },
+      { type: "alienGun", row: 3, delay: 330 },
+      { type: "armored", row: 2, delay: 520 }
+    ],
+    [
+      { type: "mechaDerp", row: 2, delay: 280 },
+      { type: "droneSaw", row: 0, delay: 520 },
+      { type: "droneSaw", row: 4, delay: 620 }
+    ]
+  ],
+  lava: [[1, 0], [1, 4], [4, 2], [7, 0], [7, 4]]
+},
+
+{
+  name: "3-8",
+  title: "Alien Blockade",
+  desc: "The aliens are not letting anything leave.",
+  startGlow: 400,
+  background: "cloud",
+  music: "battle",
+  waves: [
+    [
+      { type: "alien", row: 0, delay: 90 },
+      { type: "alien", row: 2, delay: 190 },
+      { type: "alien", row: 4, delay: 290 }
+    ],
+    [
+      { type: "alienGun", row: 1, delay: 130 },
+      { type: "alienGun", row: 3, delay: 260 },
+      { type: "droneSaw", row: 2, delay: 420 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 200 },
+      { type: "alien", row: 2, delay: 400 },
+      { type: "mechaDerp", row: 4, delay: 600 }
+    ],
+    [
+      { type: "alienGun", row: 0, delay: 150 },
+      { type: "alienGun", row: 4, delay: 300 },
+      { type: "assasinRover", row: 2, delay: 470 },
+      { type: "droneSaw", row: 1, delay: 620 },
+      { type: "droneSaw", row: 3, delay: 760 }
+    ]
+  ],
+  lava: [[4, 0], [4, 4], [5, 1], [5, 3]]
+},
+
+{
+  name: "3-9",
+  title: "Cloud Base Collapse",
+  desc: "The clouds are falling apart and everyone is still attacking you for some reason.",
+  startGlow: 500,
+  background: "cloud",
+  music: "world1",
+  waves: [
+    [
+      { type: "droneSaw", row: 0, delay: 80 },
+      { type: "alien", row: 1, delay: 180 },
+      { type: "alien", row: 3, delay: 300 },
+      { type: "droneSaw", row: 4, delay: 420 }
+    ],
+    [
+      { type: "alienGun", row: 2, delay: 160 },
+      { type: "mechaDerp", row: 0, delay: 360 },
+      { type: "mechaDerp", row: 4, delay: 560 }
+    ],
+    [
+      { type: "alienGod", row: 2, delay: 420 }
+    ],
+    [
+      { type: "assasinRover", row: 1, delay: 120 },
+      { type: "assasinRover", row: 3, delay: 240 },
+      { type: "alienGun", row: 0, delay: 420 },
+      { type: "alienGun", row: 4, delay: 560 }
+    ]
+  ],
+  lava: [[2, 1], [2, 3], [4, 0], [4, 4], [6, 2]]
+},
+
+{
+  name: "3-10",
+  title: "Evacuation Final Call",
+  desc: "The final sky escape. The alien boss does not approve.",
+  startGlow: 900,
+  background: "cloud",
+  music: "finalBoss",
+  waves: [
+    [
+      { type: "alien", row: 0, delay: 80 },
+      { type: "alien", row: 2, delay: 180 },
+      { type: "alien", row: 4, delay: 280 }
+    ],
+    [
+      { type: "droneSaw", row: 1, delay: 120 },
+      { type: "droneSaw", row: 3, delay: 260 },
+      { type: "alienGun", row: 2, delay: 420 }
+    ],
+    [
+      { type: "alienGod", row: 0, delay: 280 },
+      { type: "alienGod", row: 4, delay: 520 }
+    ],
+    [
+      { type: "alienGun", row: 1, delay: 120 },
+      { type: "alienGun", row: 3, delay: 260 },
+      { type: "droneSaw", row: 2, delay: 420 },
+      { type: "assasinRover", row: 0, delay: 620 },
+      { type: "assasinRover", row: 4, delay: 760 }
+    ],
+    [
+      { type: "alienFinalBoss", row: 2, delay: 500 },
+      { type: "alienGod", row: 1, delay: 900 },
+      { type: "alienGod", row: 3, delay: 1120 }
+    ]
+  ],
+  lava: [[3, 0], [3, 4], [4, 1], [4, 3], [6, 0], [6, 4]]
+}
     
     ]
 };
