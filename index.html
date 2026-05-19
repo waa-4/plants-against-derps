@@ -3,67 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Plants Against Derps</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #071014;
+      color: white;
+      font-family: system-ui, Arial, sans-serif;
+    }
+
+    noscript {
+      display: block;
+      padding: 24px;
+      font-size: 20px;
+    }
+
+    #loading {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(80, 220, 255, 0.2), transparent 30%),
+        linear-gradient(135deg, #030608, #0c181d 55%, #05080a);
+    }
+
+    #loading h1 {
+      color: #f8ff74;
+      font-size: clamp(34px, 8vw, 80px);
+      margin: 0;
+    }
+
+    #loading p {
+      color: #d7faff;
+      font-size: 18px;
+    }
+  </style>
 </head>
+
 <body>
-  <div id="app">
-    <section id="mainMenu" class="screen active">
-      <div class="aero-orbs"><span></span><span></span><span></span><span></span></div>
-      <div class="menu-left">
-        <h1>Plants Against Derps</h1>
-        <p class="tagline">A very professional lawn defense experience.</p>
-        <button id="playBtn" class="bubble-btn">Play</button>
-<button id="levelBtn" class="bubble-btn">Level Selectr</button>
-<button id="minigameBtn" class="bubble-btn">Minigames</button>
-<button id="shopBtn" class="bubble-btn">Twig Shop</button>
-<button id="upgradeBtn" class="bubble-btn">Upgrade Plants</button>
-<button id="howBtn" class="bubble-btn">How To Derp</button>
-      </div>
-      <div class="menu-art">
-        <div class="glass-card">
-          <img src="assets/plant-tree-gun.png" alt="Tree Gun" />
-          <h2>Tree Gun says hello.</h2>
-          <p>The menu is detailed. The actual game is a mess. This is intended.</p>
-        </div>
-      </div>
-    </section>
+  <noscript>
+    Plants Against Derps needs JavaScript enabled to run.
+  </noscript>
 
-    <section id="levelScreen" class="screen">
-      <div class="panel">
-        <h2>World 1: The Lawn of Questionable Choices</h2>
-        <p>Pick a level. Levels are customizable in <code>main.js</code>.</p>
-        <div id="levelGrid"></div>
-        <button class="bubble-btn small" id="backFromLevels">Back</button>
-      </div>
-    </section>
-
-    <section id="gameScreen" class="screen">
-      <div id="topHud">
-        <div><b id="levelTitle">Level 1</b><span id="levelDesc"> Survive the derps.</span></div>
-        <div id="stats"><span id="glowText">Glow: 50</span><span id="waveText">Wave: 0/0</span><span id="statusText">Ready</span></div>
-      </div>
-      <div id="gameWrap"><aside id="cards"></aside><canvas id="game" width="900" height="520"></canvas></div>
-     <div id="gameBottom">
-  <button class="bubble-btn small" id="backToMenu">Menu</button>
-  <button class="bubble-btn small" id="restartLevel">Restart</button>
-  <button class="bubble-btn small" id="fullscreenBtn">Fullscreen</button>
-  <span id="message">Welcome to the derp lawn.</span>
-</div>
-    </section>
-
-    <section id="howScreen" class="screen">
-      <div class="panel">
-        <h2>How To Derp</h2>
-        <p><b>Campfr</b> makes Glow over time. It replaces the usual boring resource producer.</p>
-        <p><b>Tree Gun</b> shoots derps in its lane.</p>
-        <p><b>El Kaboom</b> explodes in a small area after a short fuse.</p>
-        <p><b>Lava tiles</b> cannot be planted on. They are for future Mor Level challenges.</p>
-        <p>Win by surviving all waves. Lose if a derp reaches the left side.</p>
-        <button class="bubble-btn small" id="backFromHow">Back</button>
-      </div>
-    </section>
+  <div id="loading">
+    <div>
+      <h1>Plants Against Derps</h1>
+      <p>Loading da derps...</p>
+    </div>
   </div>
-  <script src="main.js"></script>
+
+  <script src="main.js?v=2"></script>
 </body>
 </html>
