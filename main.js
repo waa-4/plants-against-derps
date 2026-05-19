@@ -1139,6 +1139,618 @@ alienFinalBoss: {
     ]
   ],
   lava: [[3, 0], [3, 4], [4, 1], [4, 3], [6, 0], [6, 4]]
+},
+
+    {
+  name: "4-1",
+  title: "Welcome To Space, Sadly",
+  desc: "The evacuation worked. The destination did not.",
+  startGlow: 500,
+  background: "milkyway",
+  music: "world1",
+  waves: [
+    [
+      { type: "alien", row: 0, delay: 90 },
+      { type: "alien", row: 2, delay: 190 },
+      { type: "alien", row: 4, delay: 290 }
+    ],
+    [
+      { type: "droneSaw", row: 1, delay: 100 },
+      { type: "droneSaw", row: 3, delay: 240 },
+      { type: "alienGun", row: 2, delay: 420 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 200 },
+      { type: "mechaDerp", row: 4, delay: 420 },
+      { type: "alien", row: 2, delay: 620 }
+    ]
+  ],
+  lava: [[4, 2], [6, 1], [6, 3]]
+},
+
+{
+  name: "4-2",
+  title: "Low Gravity, High Problems",
+  desc: "Everything is floating except your stress.",
+  startGlow: 550,
+  background: "milkyway",
+  music: "menu",
+  waves: [
+    [
+      { type: "fast", row: 0, delay: 80 },
+      { type: "droneSaw", row: 1, delay: 170 },
+      { type: "fast", row: 3, delay: 260 },
+      { type: "droneSaw", row: 4, delay: 350 }
+    ],
+    [
+      { type: "alienGun", row: 0, delay: 160 },
+      { type: "alienGun", row: 4, delay: 320 },
+      { type: "assasinRover", row: 2, delay: 500 }
+    ],
+    [
+      { type: "alien", row: 1, delay: 130 },
+      { type: "alien", row: 3, delay: 260 },
+      { type: "mechaDerp", row: 2, delay: 520 }
+    ]
+  ],
+  lava: [[3, 0], [3, 4], [5, 2], [7, 1], [7, 3]]
+},
+
+{
+  name: "4-3",
+  title: "Satellite Yard Sale",
+  desc: "Old space junk is now attacking you. Somehow.",
+  startGlow: 600,
+  background: "milkyway",
+  music: "desert",
+  waves: [
+    [
+      { type: "armored", row: 1, delay: 100 },
+      { type: "armored", row: 3, delay: 240 },
+      { type: "droneSaw", row: 2, delay: 380 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 170 },
+      { type: "alienGun", row: 2, delay: 360 },
+      { type: "mechaDerp", row: 4, delay: 550 }
+    ],
+    [
+      { type: "droneSaw", row: 0, delay: 80 },
+      { type: "droneSaw", row: 1, delay: 160 },
+      { type: "droneSaw", row: 3, delay: 300 },
+      { type: "droneSaw", row: 4, delay: 380 },
+      { type: "alien", row: 2, delay: 560 }
+    ]
+  ],
+  lava: [[2, 2], [4, 0], [4, 4], [6, 2]]
+},
+
+{
+  name: "4-4",
+  title: "Cosmic Toll Booth",
+  desc: "The aliens are charging you for existing in space.",
+  startGlow: 625,
+  background: "milkyway",
+  music: "battle",
+  waves: [
+    [
+      { type: "alienGun", row: 1, delay: 120 },
+      { type: "alienGun", row: 3, delay: 260 }
+    ],
+    [
+      { type: "alien", row: 0, delay: 90 },
+      { type: "alien", row: 2, delay: 210 },
+      { type: "alien", row: 4, delay: 330 },
+      { type: "assasinRover", row: 2, delay: 520 }
+    ],
+    [
+      { type: "alienGod", row: 2, delay: 430 }
+    ],
+    [
+      { type: "droneSaw", row: 0, delay: 100 },
+      { type: "droneSaw", row: 4, delay: 210 },
+      { type: "alienGun", row: 1, delay: 380 },
+      { type: "alienGun", row: 3, delay: 520 }
+    ]
+  ],
+  lava: [[3, 1], [3, 3], [5, 0], [5, 4], [7, 2]]
+},
+
+{
+  name: "4-5",
+  title: "Meteor Insurance Scam",
+  desc: "Nobody told you the meteor policy expired.",
+  startGlow: 700,
+  background: "milkyway",
+  music: "world1",
+  waves: [
+    [
+      { type: "mechaDerp", row: 1, delay: 180 },
+      { type: "mechaDerp", row: 3, delay: 360 }
+    ],
+    [
+      { type: "alienGun", row: 0, delay: 140 },
+      { type: "alienGun", row: 4, delay: 280 },
+      { type: "droneSaw", row: 2, delay: 460 }
+    ],
+    [
+      { type: "alienGod", row: 0, delay: 260 },
+      { type: "alienGod", row: 4, delay: 520 }
+    ],
+    [
+      { type: "assasinRover", row: 1, delay: 130 },
+      { type: "assasinRover", row: 3, delay: 260 },
+      { type: "alien", row: 2, delay: 430 },
+      { type: "mechaDerp", row: 2, delay: 650 }
+    ]
+  ],
+  lava: [[2, 0], [2, 4], [4, 1], [4, 3], [6, 2]]
+},
+
+{
+  name: "4-6",
+  title: "Starship Parking Violation",
+  desc: "Every ship parked here is angry at you.",
+  startGlow: 750,
+  background: "milkyway",
+  music: "menu",
+  waves: [
+    [
+      { type: "droneSaw", row: 0, delay: 70 },
+      { type: "droneSaw", row: 2, delay: 180 },
+      { type: "droneSaw", row: 4, delay: 290 }
+    ],
+    [
+      { type: "alienGun", row: 1, delay: 120 },
+      { type: "alienGun", row: 3, delay: 240 },
+      { type: "alien", row: 2, delay: 390 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 200 },
+      { type: "mechaDerp", row: 2, delay: 420 },
+      { type: "mechaDerp", row: 4, delay: 640 }
+    ],
+    [
+      { type: "alienGod", row: 1, delay: 330 },
+      { type: "alienGod", row: 3, delay: 620 }
+    ]
+  ],
+  lava: [[1, 2], [3, 0], [3, 4], [5, 1], [5, 3], [7, 2]]
+},
+
+{
+  name: "4-7",
+  title: "The Stars Are Staring",
+  desc: "The background is not just a background anymore.",
+  startGlow: 825,
+  background: "milkyway",
+  music: "desert",
+  waves: [
+    [
+      { type: "alien", row: 0, delay: 80 },
+      { type: "alienGun", row: 2, delay: 220 },
+      { type: "alien", row: 4, delay: 360 }
+    ],
+    [
+      { type: "alienGod", row: 2, delay: 360 },
+      { type: "droneSaw", row: 0, delay: 650 },
+      { type: "droneSaw", row: 4, delay: 760 }
+    ],
+    [
+      { type: "alienGun", row: 0, delay: 120 },
+      { type: "alienGun", row: 1, delay: 240 },
+      { type: "alienGun", row: 3, delay: 400 },
+      { type: "alienGun", row: 4, delay: 520 }
+    ],
+    [
+      { type: "mechaDerp", row: 1, delay: 220 },
+      { type: "mechaDerp", row: 3, delay: 440 },
+      { type: "alienGod", row: 2, delay: 780 }
+    ]
+  ],
+  lava: [[2, 1], [2, 3], [4, 2], [6, 1], [6, 3], [8, 2]]
+},
+
+{
+  name: "4-8",
+  title: "Alien God Reunion",
+  desc: "There are several of them. This was not in the plan.",
+  startGlow: 950,
+  background: "milkyway",
+  music: "battle",
+  waves: [
+    [
+      { type: "alienGod", row: 0, delay: 220 },
+      { type: "alienGod", row: 4, delay: 440 }
+    ],
+    [
+      { type: "droneSaw", row: 1, delay: 90 },
+      { type: "droneSaw", row: 2, delay: 180 },
+      { type: "droneSaw", row: 3, delay: 270 },
+      { type: "alienGun", row: 2, delay: 520 }
+    ],
+    [
+      { type: "alienGod", row: 1, delay: 260 },
+      { type: "alienGod", row: 3, delay: 520 },
+      { type: "assasinRover", row: 0, delay: 760 },
+      { type: "assasinRover", row: 4, delay: 860 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 170 },
+      { type: "mechaDerp", row: 4, delay: 340 },
+      { type: "alienGun", row: 1, delay: 520 },
+      { type: "alienGun", row: 3, delay: 700 },
+      { type: "alienGod", row: 2, delay: 980 }
+    ]
+  ],
+  lava: [[3, 0], [3, 1], [3, 3], [3, 4], [6, 0], [6, 4]]
+},
+
+{
+  name: "4-9",
+  title: "Before The Real Problem",
+  desc: "The universe is spamming warnings and none of them are helpful.",
+  startGlow: 1200,
+  background: "milkyway",
+  music: "world1",
+  waves: [
+    [
+      { type: "alien", row: 0, delay: 70 },
+      { type: "alien", row: 1, delay: 140 },
+      { type: "alien", row: 2, delay: 210 },
+      { type: "alien", row: 3, delay: 280 },
+      { type: "alien", row: 4, delay: 350 }
+    ],
+    [
+      { type: "droneSaw", row: 0, delay: 80 },
+      { type: "droneSaw", row: 4, delay: 160 },
+      { type: "assasinRover", row: 1, delay: 300 },
+      { type: "assasinRover", row: 3, delay: 430 },
+      { type: "alienGun", row: 2, delay: 620 }
+    ],
+    [
+      { type: "alienGod", row: 0, delay: 260 },
+      { type: "alienGod", row: 2, delay: 520 },
+      { type: "alienGod", row: 4, delay: 780 }
+    ],
+    [
+      { type: "mechaDerp", row: 1, delay: 150 },
+      { type: "mechaDerp", row: 3, delay: 320 },
+      { type: "alienGun", row: 0, delay: 500 },
+      { type: "alienGun", row: 4, delay: 680 },
+      { type: "droneSaw", row: 2, delay: 860 }
+    ],
+    [
+      { type: "alienFinalBoss", row: 2, delay: 600 },
+      { type: "alienGod", row: 0, delay: 980 },
+      { type: "alienGod", row: 4, delay: 1180 },
+      { type: "assasinRover", row: 1, delay: 1420 },
+      { type: "assasinRover", row: 3, delay: 1540 }
+    ]
+  ],
+  lava: [[2, 0], [2, 4], [4, 1], [4, 3], [5, 2], [7, 0], [7, 4]]
+},
+
+    {
+  "name": "4-10",
+  "title": "The Great Derpocolypse",
+  "desc": "Look how far you've came. I belive in you.",
+  "startGlow": 200,
+  "background": "milkyway",
+  "music": "finalBoss",
+  "waves": [
+    [
+      {
+        "type": "droneSaw",
+        "row": 2,
+        "delay": 50
+      },
+      {
+        "type": "fast",
+        "row": 2,
+        "delay": 140
+      },
+      {
+        "type": "alienGod",
+        "row": 2,
+        "delay": 360
+      },
+      {
+        "type": "alien",
+        "row": 0,
+        "delay": 480
+      },
+      {
+        "type": "alienGod",
+        "row": 1,
+        "delay": 600
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 4,
+        "delay": 720
+      }
+    ],
+    [
+      {
+        "type": "assasinRover",
+        "row": 1,
+        "delay": 120
+      },
+      {
+        "type": "alienGod",
+        "row": 0,
+        "delay": 240
+      },
+      {
+        "type": "alienGun",
+        "row": 2,
+        "delay": 360
+      },
+      {
+        "type": "mechaDerp",
+        "row": 3,
+        "delay": 480
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 2,
+        "delay": 600
+      },
+      {
+        "type": "assasinRover",
+        "row": 4,
+        "delay": 720
+      }
+    ],
+    [
+      {
+        "type": "alienFinalBoss",
+        "row": 0,
+        "delay": 120
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 1,
+        "delay": 240
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 2,
+        "delay": 360
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 3,
+        "delay": 480
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 4,
+        "delay": 600
+      },
+      {
+        "type": "mechaDerp",
+        "row": 2,
+        "delay": 720
+      }
+    ],
+    [
+      {
+        "type": "basic",
+        "row": 2,
+        "delay": 120
+      },
+      {
+        "type": "armored",
+        "row": 2,
+        "delay": 240
+      },
+      {
+        "type": "fast",
+        "row": 2,
+        "delay": 360
+      },
+      {
+        "type": "assasinRover",
+        "row": 2,
+        "delay": 480
+      },
+      {
+        "type": "mechaDerp",
+        "row": 2,
+        "delay": 600
+      },
+      {
+        "type": "alien",
+        "row": 2,
+        "delay": 720
+      },
+      {
+        "type": "alienGun",
+        "row": 2,
+        "delay": 840
+      },
+      {
+        "type": "droneSaw",
+        "row": 2,
+        "delay": 960
+      },
+      {
+        "type": "alienGod",
+        "row": 2,
+        "delay": 1080
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 2,
+        "delay": 1200
+      }
+    ],
+    [
+      {
+        "type": "alienGun",
+        "row": 3,
+        "delay": 120
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 2,
+        "delay": 240
+      },
+      {
+        "type": "assasinRover",
+        "row": 1,
+        "delay": 360
+      },
+      {
+        "type": "assasinRover",
+        "row": 4,
+        "delay": 480
+      },
+      {
+        "type": "droneSaw",
+        "row": 0,
+        "delay": 600
+      },
+      {
+        "type": "droneSaw",
+        "row": 0,
+        "delay": 601
+      }
+    ],
+    [
+      {
+        "type": "alienFinalBoss",
+        "row": 4,
+        "delay": 120
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 3,
+        "delay": 240
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 1,
+        "delay": 360
+      },
+      {
+        "type": "alienFinalBoss",
+        "row": 4,
+        "delay": 480
+      }
+    ],
+    [
+      {
+        "type": "assasinRover",
+        "row": 2,
+        "delay": 120
+      }
+    ]
+  ],
+  "lava": [
+    [
+      7,
+      1
+    ],
+    [
+      6,
+      0
+    ],
+    [
+      6,
+      2
+    ],
+    [
+      7,
+      3
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      5,
+      1
+    ],
+    [
+      5,
+      3
+    ],
+    [
+      5,
+      4
+    ],
+    [
+      5,
+      2
+    ],
+    [
+      6,
+      3
+    ],
+    [
+      6,
+      1
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      7,
+      0
+    ],
+    [
+      7,
+      2
+    ],
+    [
+      7,
+      4
+    ],
+    [
+      8,
+      0
+    ],
+    [
+      8,
+      1
+    ],
+    [
+      8,
+      2
+    ],
+    [
+      8,
+      3
+    ],
+    [
+      8,
+      4
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      1
+    ]
+  ]
 }
     
     ]
