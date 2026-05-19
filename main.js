@@ -1936,8 +1936,7 @@ function update() {
   updateEnemies();
   updateExplosions();
   checkSpecialGoals();
-
-  updateHud();
+updateHud();
 }
 
 function updatePlacementCooldowns() {
