@@ -466,10 +466,259 @@ const CONFIG = {
           { type: "fast", row: 2, delay: 430 }
         ]
       ],
-      lava: [[4, 0], [4, 1], [4, 3], [4, 4]]
-    }
-  ]
-};
+            lava: [[4, 0], [4, 1], [4, 3], [4, 4]]
+    },
+
+    {
+      name: "2-1",
+      title: "Start of The Derp Ages",
+      desc: "Now fighting with machines.",
+      startGlow: 125,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "basic", row: 0, delay: 70 },
+          { type: "basic", row: 2, delay: 160 },
+          { type: "basic", row: 4, delay: 250 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 80 },
+          { type: "armored", row: 2, delay: 280 },
+          { type: "fast", row: 3, delay: 460 }
+        ],
+        [
+          { type: "armored", row: 0, delay: 110 },
+          { type: "armored", row: 4, delay: 270 },
+          { type: "fast", row: 2, delay: 430 }
+        ],
+        [
+          { type: "mechaDerp", row: 3, delay: 530 }
+        ]
+      ],
+      lava: [[4, 0], [4, 1], [4, 3], [5, 1], [5, 4], [4, 4]]
+    },
+
+    {
+      name: "2-2",
+      title: "Derpday",
+      desc: "The Derp's birthday. We are here to ruin it.",
+      startGlow: 125,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "armored", row: 0, delay: 70 },
+          { type: "basic", row: 4, delay: 250 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 80 },
+          { type: "armored", row: 2, delay: 280 },
+          { type: "fast", row: 4, delay: 280 },
+          { type: "fast", row: 3, delay: 460 }
+        ],
+        [
+          { type: "armored", row: 0, delay: 110 },
+          { type: "armored", row: 4, delay: 270 },
+          { type: "fast", row: 2, delay: 430 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 530 },
+          { type: "assasinRover", row: 3, delay: 760 }
+        ]
+      ],
+      lava: [[4, 0], [4, 1], [4, 3], [5, 1], [5, 4], [1, 3], [4, 4]]
+    },
+
+    {
+      name: "2-3",
+      title: "Derp Campsite",
+      desc: "Secret hideout no more.",
+      startGlow: 125,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "armored", row: 0, delay: 70 },
+          { type: "basic", row: 2, delay: 160 },
+          { type: "basic", row: 1, delay: 160 },
+          { type: "basic", row: 4, delay: 250 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 80 },
+          { type: "mechaDerp", row: 2, delay: 280 },
+          { type: "fast", row: 3, delay: 460 }
+        ],
+        [
+          { type: "armored", row: 0, delay: 110 },
+          { type: "armored", row: 4, delay: 270 },
+          { type: "fast", row: 2, delay: 430 }
+        ],
+        [
+          { type: "assasinRover", row: 3, delay: 530 }
+        ]
+      ],
+      lava: []
+    },
+
+    {
+      name: "2-4",
+      title: "Rush Storm!!",
+      desc: "I wish you luck.",
+      startGlow: 1000,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "assasinRover", row: 0, delay: 70 },
+          { type: "fast", row: 4, delay: 250 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 80 },
+          { type: "assasinRover", row: 2, delay: 280 },
+          { type: "armored", row: 2, delay: 280 },
+          { type: "fast", row: 4, delay: 280 },
+          { type: "fast", row: 3, delay: 460 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 110 },
+          { type: "armored", row: 4, delay: 270 },
+          { type: "fast", row: 2, delay: 430 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 530 },
+          { type: "assasinRover", row: 3, delay: 760 }
+        ]
+      ],
+      lava: []
+    },
+    {
+  name: "2-5",
+  title: "Sand in the Wires",
+  desc: "The machines are getting crunchy.",
+  startGlow: 175,
+  background: "desert",
+  music: "desert",
+  waves: [
+    [
+      { type: "basic", row: 0, delay: 80 },
+      { type: "basic", row: 2, delay: 180 },
+      { type: "basic", row: 4, delay: 280 }
+    ],
+    [
+      { type: "armored", row: 1, delay: 120 },
+      { type: "fast", row: 3, delay: 260 },
+      { type: "armored", row: 4, delay: 440 }
+    ],
+    [
+      { type: "mechaDerp", row: 2, delay: 250 },
+      { type: "assasinRover", row: 0, delay: 520 },
+      { type: "assasinRover", row: 4, delay: 700 }
+    ]
+  ],
+  lava: [[3, 1], [4, 1], [5, 3], [6, 3]]
+},
+    {
+  name: "2-6",
+  title: "Do Not Touch The Red Sand",
+  desc: "That is probably not sand.",
+  startGlow: 225,
+  background: "desert",
+  music: "desert",
+  waves: [
+    [
+      { type: "fast", row: 0, delay: 90 },
+      { type: "fast", row: 4, delay: 210 }
+    ],
+    [
+      { type: "armored", row: 1, delay: 100 },
+      { type: "armored", row: 3, delay: 260 },
+      { type: "basic", row: 2, delay: 380 }
+    ],
+    [
+      { type: "mechaDerp", row: 1, delay: 280 },
+      { type: "mechaDerp", row: 3, delay: 520 }
+    ]
+  ],
+  lava: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [6, 2]]
+},
+    {
+  name: "2-7",
+  title: "Rover Practice",
+  desc: "They keep sending the tiny murder cars.",
+  startGlow: 300,
+  background: "desert",
+  music: "desert",
+  waves: [
+    [
+      { type: "assasinRover", row: 0, delay: 120 },
+      { type: "assasinRover", row: 2, delay: 260 },
+      { type: "assasinRover", row: 4, delay: 400 }
+    ],
+    [
+      { type: "basic", row: 1, delay: 80 },
+      { type: "assasinRover", row: 1, delay: 250 },
+      { type: "armored", row: 3, delay: 420 }
+    ],
+    [
+      { type: "fast", row: 0, delay: 110 },
+      { type: "fast", row: 4, delay: 180 },
+      { type: "assasinRover", row: 2, delay: 360 },
+      { type: "mechaDerp", row: 2, delay: 620 }
+    ]
+  ],
+  lava: [[4, 0], [4, 4]]
+},
+    {
+  name: "2-8",
+  title: "The Campfire Is Not Safe",
+  desc: "They found your Glow economy.",
+  startGlow: 100,
+  background: "desert",
+  music: "desert",
+  waves: [
+    [
+      { type: "basic", row: 2, delay: 90 },
+      { type: "fast", row: 2, delay: 230 }
+    ],
+    [
+      { type: "assasinRover", row: 1, delay: 120 },
+      { type: "assasinRover", row: 3, delay: 280 },
+      { type: "armored", row: 2, delay: 460 }
+    ],
+    [
+      { type: "mechaDerp", row: 0, delay: 250 },
+      { type: "mechaDerp", row: 4, delay: 450 },
+      { type: "fast", row: 2, delay: 650 }
+    ]
+  ],
+  lava: [[5, 1], [5, 2], [5, 3]]
+},
+    {
+  name: "2-9",
+  title: "Mecha Derp Parking Lot",
+  desc: "Why are there so many of them.",
+  startGlow: 500,
+  background: "desert",
+  music: "desert",
+  waves: [
+    [
+      { type: "mechaDerp", row: 0, delay: 180 },
+      { type: "mechaDerp", row: 4, delay: 360 }
+    ],
+    [
+      { type: "armored", row: 1, delay: 100 },
+      { type: "armored", row: 3, delay: 180 },
+      { type: "assasinRover", row: 2, delay: 400 }
+    ],
+    [
+      { type: "mechaDerp", row: 1, delay: 200 },
+      { type: "mechaDerp", row: 2, delay: 420 },
+      { type: "mechaDerp", row: 3, delay: 640 }
+    ]
+  ],
+  lava: [[3, 0], [3, 2], [3, 4], [6, 1], [6, 3]]
+},
 // ============================================================
 // 2. GLOBAL STATE + ASSET LOADING
 // ============================================================
@@ -1985,7 +2234,16 @@ function winLevel() {
   playMusic(CONFIG.audio.victoryTrack);
   playSfx("win");
 
-  setTimeout(() => {
+    setTimeout(() => {
+    if (state.levelList === "levels") {
+      const nextIndex = state.levelIndex + 1;
+
+      if (CONFIG.levels[nextIndex]) {
+        startLevel(nextIndex, "levels");
+        return;
+      }
+    }
+
     showMenu();
   }, 1600);
 }
