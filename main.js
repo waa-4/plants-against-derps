@@ -72,6 +72,7 @@ const CONFIG = {
     rosegun: "assets/rosegun.png",
     soggyMattress: "assets/soggy-mattress.png",
     kaboom: "assets/plant-el-kaboom.png",
+    bucketStalk: "assets/bucketboi.png",
 
     basicDerp: "assets/enemy-basic-derp.png",
     armoredDerp: "assets/enemy-armored-derp.png",
@@ -125,6 +126,23 @@ const CONFIG = {
       produceCooldown: 900,
       placementCooldown: 120
     },
+
+    bucketStalk: {
+  name: "Bucket-Stalk",
+  cost: 175,
+  hp: 90,
+  img: "bucketStalk",
+  desc: "A tall stalk with a bucket-powered blaster.",
+  role: "Heavy Shooter",
+
+  unlockCost: 8,
+
+  shooter: true,
+  shootCooldown: 210,
+  projectileDamage: 70,
+  projectileSpeed: 6,
+  placementCooldown: 360
+},
 
     treeGun: {
       name: "Tree Gun",
@@ -1147,8 +1165,11 @@ let loopId = 0;
 
 let save = {
   twigs: 0,
+  sticks: 0,
   badges: {},
-  upgrades: {}
+  upgrades: {},
+  statUpgrades: {},
+  unlockedPlants: {}
 };
 
 let state = null;
@@ -1184,8 +1205,11 @@ function loadSave() {
 
     save = {
       twigs: Number(parsed.twigs || 0),
+      sticks: Number(parsed.sticks || 0),
       badges: parsed.badges || {},
-      upgrades: parsed.upgrades || {}
+      upgrades: parsed.upgrades || {},
+      statUpgrades: parsed.statUpgrades || {},
+      unlockedPlants: parsed.unlockedPlants || {}
     };
   } catch (err) {
     console.warn("Save load failed:", err);
@@ -1208,6 +1232,55 @@ function imageReady(img) {
   return img && img.complete && img.naturalWidth > 0;
 }
 
+function getSticks() {
+  return Number(save.sticks || 0);
+}
+
+function getPlantExtraUpgrades(id) {
+  if (!save.statUpgrades[id]) {
+    save.statUpgrades[id] = {
+      cooldown: 0,
+      cost: 0,
+      health: 0,
+      power: 0
+    };
+  }
+
+  return save.statUpgrades[id];
+}
+
+function getPlantExtraTotal(id) {
+  const extra = getPlantExtraUpgrades(id);
+  return (
+    Number(extra.cooldown || 0) +
+    Number(extra.cost || 0) +
+    Number(extra.health || 0) +
+    Number(extra.power || 0)
+  );
+}
+
+function getPlantLevelText(id) {
+  return `Lv ${getPlantLevel(id)} +${getPlantExtraTotal(id)}`;
+}
+
+function getStatUpgradeCost(id, stat) {
+  const extra = getPlantExtraUpgrades(id);
+  const current = Number(extra[stat] || 0);
+
+  return 2 + current * 2;
+}
+
+function isPlantUnlocked(id) {
+  const plant = CONFIG.plants[id];
+  if (!plant) return false;
+
+  if (!plant.unlockCost || plant.unlockCost <= 0) {
+    return true;
+  }
+
+  return !!save.unlockedPlants[id];
+}
+
 function getPlantLevel(id) {
   return Math.max(1, Math.min(CONFIG.upgrades.maxLevel, save.upgrades[id] || 1));
 }
@@ -1223,12 +1296,48 @@ function getPlantStats(id) {
 
   const level = getPlantLevel(id);
   const bonus = level - 1;
+  const extra = getPlantExtraUpgrades(id);
+
+  const cooldownBonus = Number(extra.cooldown || 0);
+  const costBonus = Number(extra.cost || 0);
+  const healthBonus = Number(extra.health || 0);
+  const powerBonus = Number(extra.power || 0);
+
+  const costMultiplier = Math.max(0.55, 1 - costBonus * 0.06);
+  const cooldownMultiplier = Math.max(0.45, 1 - cooldownBonus * 0.07);
+  const placementMultiplier = Math.max(0.55, 1 - cooldownBonus * 0.05);
 
   return {
     ...base,
-    hp: (base.hp || 1) + bonus * CONFIG.upgrades.hpBoostPerLevel,
-    projectileDamage: (base.projectileDamage || 0) + bonus * CONFIG.upgrades.damageBoostPerLevel,
-    produceAmount: (base.produceAmount || 0) + bonus * CONFIG.upgrades.producerBoostPerLevel
+
+    cost: Math.max(0, Math.round((base.cost || 0) * costMultiplier)),
+
+    hp:
+      (base.hp || 1) +
+      bonus * CONFIG.upgrades.hpBoostPerLevel +
+      healthBonus * 20,
+
+    projectileDamage:
+      (base.projectileDamage || 0) +
+      bonus * CONFIG.upgrades.damageBoostPerLevel +
+      powerBonus * 6,
+
+    produceAmount:
+      (base.produceAmount || 0) +
+      bonus * CONFIG.upgrades.producerBoostPerLevel +
+      powerBonus * 6,
+
+    shootCooldown: base.shootCooldown
+      ? Math.max(20, Math.round(base.shootCooldown * cooldownMultiplier))
+      : base.shootCooldown,
+
+    produceCooldown: base.produceCooldown
+      ? Math.max(60, Math.round(base.produceCooldown * cooldownMultiplier))
+      : base.produceCooldown,
+
+    placementCooldown: base.placementCooldown
+      ? Math.max(0, Math.round(base.placementCooldown * placementMultiplier))
+      : base.placementCooldown
   };
 }
 
@@ -2641,8 +2750,8 @@ function showShop() {
   setScreen("shop", `
     <section class="panel">
       <h2>Twig Shop</h2>
-      <p>You have <b>${save.twigs}</b> ${CONFIG.currency.name}.</p>
-      <p>Badges are just for fun right now.</p>
+      <p>You have <b>${save.twigs}</b> Twigs and <b>${getSticks()}</b> Sticks.</p>
+      <p>Trade Twigs into Sticks, buy badges, and prepare for future unlocks.</p>
       <div class="grid-list" id="shopGrid"></div>
       <br>
       <button class="bubble-btn" id="backBtn">Back</button>
@@ -2650,6 +2759,30 @@ function showShop() {
   `);
 
   const grid = document.getElementById("shopGrid");
+
+  const tradeBtn = document.createElement("button");
+  tradeBtn.className = "tile-btn";
+  tradeBtn.innerHTML = `
+    Trade Twigs for Sticks
+    <small>Trade 5 Twigs for 3 Sticks.</small>
+    <small>You have ${save.twigs} Twigs and ${getSticks()} Sticks.</small>
+  `;
+
+  tradeBtn.addEventListener("click", () => {
+    if (save.twigs < 5) {
+      alert("Not enough Twigs.");
+      playSfx("no");
+      return;
+    }
+
+    save.twigs -= 5;
+    save.sticks = getSticks() + 3;
+    saveGame();
+    playSfx("glow");
+    showShop();
+  });
+
+  grid.appendChild(tradeBtn);
 
   for (const [id, badge] of Object.entries(CONFIG.shopBadges)) {
     const owned = !!save.badges[id];
@@ -2691,13 +2824,146 @@ function showUpgrades() {
   setScreen("upgrades", `
     <section class="panel">
       <h2>Upgrade Plants</h2>
-      <p>You have <b>${save.twigs}</b> ${CONFIG.currency.name}.</p>
-      <p>Max level is ${CONFIG.upgrades.maxLevel}.</p>
+      <p>You have <b>${save.twigs}</b> Twigs and <b>${getSticks()}</b> Sticks.</p>
+      <p>Main levels use Twigs. Extra stat upgrades use Sticks.</p>
       <div class="grid-list" id="upgradeGrid"></div>
       <br>
       <button class="bubble-btn" id="backBtn">Back</button>
     </section>
   `);
+
+  const grid = document.getElementById("upgradeGrid");
+
+  for (const [id, plant] of Object.entries(CONFIG.plants)) {
+    if (plant.tool) continue;
+
+    const unlocked = isPlantUnlocked(id);
+    const level = getPlantLevel(id);
+    const maxed = level >= CONFIG.upgrades.maxLevel;
+    const mainCost = getUpgradeCost(id);
+    const extra = getPlantExtraUpgrades(id);
+    const extraTotal = getPlantExtraTotal(id);
+
+    const card = document.createElement("div");
+    card.className = "tile-btn";
+
+    if (!unlocked) {
+      const unlockCost = plant.unlockCost || 0;
+
+      card.innerHTML = `
+        ${plant.name}
+        <small>${plant.desc}</small>
+        <small>Locked. Unlock cost: ${unlockCost} Sticks.</small>
+      `;
+
+      card.addEventListener("click", () => {
+        if (getSticks() < unlockCost) {
+          alert("Not enough Sticks.");
+          playSfx("no");
+          return;
+        }
+
+        save.sticks = getSticks() - unlockCost;
+        save.unlockedPlants[id] = true;
+        saveGame();
+        playSfx("glow");
+        showUpgrades();
+      });
+
+      grid.appendChild(card);
+      continue;
+    }
+
+    card.innerHTML = `
+      <b>${plant.name}</b>
+      <small>${getPlantLevelText(id)}</small>
+      <small>${plant.desc}</small>
+      <small>Main Level: ${maxed ? "Maxed" : `${mainCost} Twigs`}</small>
+      <small>Extra Upgrades: ${extraTotal}/20</small>
+
+      <div style="display:grid; gap:6px; margin-top:10px;">
+        <button class="bubble-btn" data-main="${id}">
+          Upgrade Main Level
+        </button>
+
+        <button class="bubble-btn" data-stat="${id}:cooldown">
+          Cooldown +${extra.cooldown}/5 - ${getStatUpgradeCost(id, "cooldown")} Sticks
+        </button>
+
+        <button class="bubble-btn" data-stat="${id}:cost">
+          Cost +${extra.cost}/5 - ${getStatUpgradeCost(id, "cost")} Sticks
+        </button>
+
+        <button class="bubble-btn" data-stat="${id}:health">
+          Health +${extra.health}/5 - ${getStatUpgradeCost(id, "health")} Sticks
+        </button>
+
+        <button class="bubble-btn" data-stat="${id}:power">
+          Attack/Produce +${extra.power}/5 - ${getStatUpgradeCost(id, "power")} Sticks
+        </button>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  }
+
+  grid.querySelectorAll("[data-main]").forEach(button => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.main;
+      const level = getPlantLevel(id);
+      const maxed = level >= CONFIG.upgrades.maxLevel;
+      const cost = getUpgradeCost(id);
+
+      if (maxed) {
+        alert("This plant is already max main level.");
+        playSfx("no");
+        return;
+      }
+
+      if (save.twigs < cost) {
+        alert("Not enough Twigs.");
+        playSfx("no");
+        return;
+      }
+
+      save.twigs -= cost;
+      save.upgrades[id] = level + 1;
+      saveGame();
+      playSfx("glow");
+      showUpgrades();
+    });
+  });
+
+  grid.querySelectorAll("[data-stat]").forEach(button => {
+    button.addEventListener("click", () => {
+      const [id, stat] = button.dataset.stat.split(":");
+      const extra = getPlantExtraUpgrades(id);
+
+      if (extra[stat] >= 5) {
+        alert("This stat is already +5.");
+        playSfx("no");
+        return;
+      }
+
+      const cost = getStatUpgradeCost(id, stat);
+
+      if (getSticks() < cost) {
+        alert("Not enough Sticks.");
+        playSfx("no");
+        return;
+      }
+
+      save.sticks = getSticks() - cost;
+      extra[stat] += 1;
+
+      saveGame();
+      playSfx("glow");
+      showUpgrades();
+    });
+  });
+
+  document.getElementById("backBtn").onclick = showMenu;
+}
 
   const grid = document.getElementById("upgradeGrid");
 
@@ -2938,8 +3204,11 @@ function renderCards() {
   cards.innerHTML = "";
 
   for (const id of CONFIG.defaultLoadout) {
-    const plant = CONFIG.plants[id];
-    if (!plant) continue;
+  const plant = CONFIG.plants[id];
+  if (!plant) continue;
+  if (!isPlantUnlocked(id)) continue;
+
+  const stats = getPlantStats(id);
 
     const cooldown = state.placementCooldowns[id] || 0;
 
@@ -2951,8 +3220,8 @@ function renderCards() {
     btn.innerHTML = `
       <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
       <b>${plant.name}</b><br>
-      <small>${plant.cost} Glow</small><br>
-      <small>${plant.tool ? "Tool" : `Lv ${getPlantLevel(id)}`}</small>
+      <small>${stats.cost} Glow</small><br>
+<small>${plant.tool ? "Tool" : getPlantLevelText(id)}</small>
       ${cooldown > 0 ? `<br><small>${Math.ceil(cooldown / 60)}s</small>` : ""}
     `;
 
@@ -2989,7 +3258,7 @@ function updateHud() {
   if (!state) return;
 
   const glowHud = document.getElementById("glowHud");
-  const twigHud = document.getElementById("twigHud");
+  if (twigHud) twigHud.textContent = `Twigs: ${save.twigs} | Sticks: ${getSticks()}`;
   const waveHud = document.getElementById("waveHud");
 
   if (glowHud) glowHud.textContent = `Glow: ${state.glow}`;
@@ -3064,13 +3333,15 @@ function plantAt(row, col, id) {
     return;
   }
 
-  if (state.glow < plantDef.cost) {
+  const stats = getPlantStats(id);
+
+if (state.glow < stats.cost) {
     say("Not enough Glow.");
     playSfx("no");
     return;
   }
 
-  const stats = getPlantStats(id);
+  
   state.glow -= plantDef.cost;
 
   const plant = {
