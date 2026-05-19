@@ -3,8 +3,20 @@
 const STORAGE_KEY="pad_custom_levels_v1";
 const BACKGROUNDS=["forest","desert","cloud","milkyway","chess"];
 const MUSIC=["world1","battle","desert","victory","finalBoss"];
-const ENEMIES=["basic","armored","fast","assasinRover","mechaDerp"];
-const MAX_WAVES=5,MAX_ENEMIES_PER_WAVE=12;
+const ENEMIES = [
+  "basic",
+  "armored",
+  "fast",
+  "assasinRover",
+  "mechaDerp",
+
+  "alien",
+  "alienGun",
+  "droneSaw",
+  "alienGod",
+  "alienFinalBoss"
+];
+const MAX_WAVES=15,MAX_ENEMIES_PER_WAVE=12;
 let current=makeDefaultLevel();
 let savedLevels=loadSavedLevels();
 function clamp(num,min,max){return Math.max(min,Math.min(max,Number(num)||0));}
