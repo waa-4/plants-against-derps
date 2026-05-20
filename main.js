@@ -2062,7 +2062,8 @@ function showMenu() {
           <button class="btn" onclick="showShop()">Twig Shop</button>
           <button class="btn" onclick="showAlmanac()">Meet Da Whatever</button>
           <button class="btn" onclick="showCustomLevels()">Custom Levels</button>
-          <button class="btn" onclick="window.open('mod/','_self')">Open PAD Modder</button>
+<button class="btn warn" onclick="showSaveBackup()">Save Backup</button>
+<button class="btn" onclick="window.open('mod/','_self')">Open PAD Modder</button>
         </div>
       </div>
 
@@ -2349,6 +2350,280 @@ function buyBadge(id) {
   saveGame();
   showShop();
 }
+
+
+
+
+// ============================================================
+// SAVE BACKUP TERMINAL
+// Encoded save codes for backups/imports.
+// ============================================================
+
+function encodeBase64Url(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+
+  for (const b of bytes) {
+    bin += String.fromCharCode(b);
+  }
+
+  return btoa(bin)
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+}
+
+function decodeBase64Url(str) {
+  let fixed = str
+    .replaceAll("-", "+")
+    .replaceAll("_", "/");
+
+  while (fixed.length % 4) {
+    fixed += "=";
+  }
+
+  const bin = atob(fixed);
+  const bytes = new Uint8Array(bin.length);
+
+  for (let i = 0; i < bin.length; i++) {
+    bytes[i] = bin.charCodeAt(i);
+  }
+
+  return new TextDecoder().decode(bytes);
+}
+
+function toPad36(num, size = 5) {
+  return Math.max(0, Number(num || 0))
+    .toString(36)
+    .toUpperCase()
+    .padStart(size, "0");
+}
+
+function padChecksum(text) {
+  let hash = 2166136261;
+
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0)
+    .toString(36)
+    .toUpperCase()
+    .slice(-4)
+    .padStart(4, "0");
+}
+
+function makeSaveCode() {
+  fixSave();
+
+  const compactSave = {
+    twigs: save.twigs,
+    sticks: save.sticks,
+    badges: save.badges || {},
+    upgrades: save.upgrades || {},
+    statUpgrades: save.statUpgrades || {},
+    unlockedPlants: save.unlockedPlants || {},
+    cleared: save.cleared || {},
+    bestMinigames: save.bestMinigames || {}
+  };
+
+  const payload = {
+    format: "PAD25",
+    made: Date.now(),
+    save: compactSave
+  };
+
+  const clearedCount = Object.values(save.cleared || {}).filter(Boolean).length;
+  const data = encodeBase64Url(JSON.stringify(payload));
+
+  const body = [
+    "DERP",
+    "PAD25",
+    `L${toPad36(clearedCount)}`,
+    `T${toPad36(save.twigs)}`,
+    `S${toPad36(save.sticks)}`,
+    `D${data}`
+  ].join("-");
+
+  return `${body}-C${padChecksum(body)}`;
+}
+
+function readSaveCode(code) {
+  const clean = String(code || "").trim().replace(/\s+/g, "");
+
+  const match = clean.match(
+    /^DERP-PAD25-L([A-Z0-9]+)-T([A-Z0-9]+)-S([A-Z0-9]+)-D([A-Za-z0-9_-]+)-C([A-Z0-9]+)$/i
+  );
+
+  if (!match) {
+    throw new Error("That does not look like a PAD25 save code.");
+  }
+
+  const body = clean.replace(/-C[A-Z0-9]+$/i, "");
+  const givenChecksum = match[5].toUpperCase();
+  const realChecksum = padChecksum(body);
+
+  if (givenChecksum !== realChecksum) {
+    throw new Error("Checksum failed. The code may be mistyped or broken.");
+  }
+
+  const payload = JSON.parse(decodeBase64Url(match[4]));
+
+  if (!payload || payload.format !== "PAD25" || !payload.save) {
+    throw new Error("This save code is not a valid PAD25 save.");
+  }
+
+  return payload.save;
+}
+
+async function copySaveCode() {
+  const code = makeSaveCode();
+
+  try {
+    await navigator.clipboard.writeText(code);
+    toast("Save code copied!");
+  } catch (err) {
+    prompt("Copy your PAD save code:", code);
+  }
+}
+
+function importSaveCode() {
+  const code = prompt("Paste your PAD save code:");
+
+  if (!code) return;
+
+  try {
+    const imported = readSaveCode(code);
+
+    save = {
+      twigs: Number(imported.twigs || 0),
+      sticks: Number(imported.sticks || 0),
+      badges: imported.badges || {},
+      upgrades: imported.upgrades || {},
+      statUpgrades: imported.statUpgrades || {},
+      unlockedPlants: imported.unlockedPlants || {},
+      cleared: imported.cleared || {},
+      bestMinigames: imported.bestMinigames || {}
+    };
+
+    fixSave();
+    saveGame();
+
+    toast("Save imported!");
+    showSaveBackup();
+  } catch (err) {
+    toast(err.message || "Import failed.");
+  }
+}
+
+function downloadSaveTxt() {
+  const code = makeSaveCode();
+
+  const text =
+`Plants Against Derps Save Backup
+
+Copy this code somewhere safe:
+
+${code}
+
+If an update breaks your save, open PAD → Save Backup → Import Save Code.
+`;
+
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "PAD_Save_Backup.txt";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  URL.revokeObjectURL(url);
+  toast("Save .txt downloaded!");
+}
+
+function resetSaveDanger() {
+  const ok = confirm(
+    "This will reset your PAD save on this browser. Export a save code first if you care about it. Reset?"
+  );
+
+  if (!ok) return;
+
+  localStorage.removeItem(CONFIG.saveKey);
+
+  save = {
+    twigs: 0,
+    sticks: 0,
+    badges: {},
+    upgrades: {},
+    statUpgrades: {},
+    unlockedPlants: {},
+    cleared: {},
+    bestMinigames: {}
+  };
+
+  fixSave();
+  saveGame();
+
+  toast("Save reset.");
+  showMenu();
+}
+
+function showSaveBackup() {
+  const code = makeSaveCode();
+
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="showMenu()">← Menu</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Save Backup Terminal</h1>
+
+      <div class="panel">
+        <p class="sub">
+          This creates an encoded PAD save code. It is not a real account system,
+          but it protects your progress from updates, browser clearing, or cursed code moments.
+        </p>
+
+        <div class="stack">
+          <button class="btn good" onclick="copySaveCode()">Copy Save Code</button>
+          <button class="btn" onclick="importSaveCode()">Import Save Code</button>
+          <button class="btn" onclick="downloadSaveTxt()">Download Save .txt</button>
+          <button class="btn bad" onclick="resetSaveDanger()">Reset Save</button>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="panel">
+        <h2>Current Save Code</h2>
+
+        <textarea
+          readonly
+          style="width:100%;height:150px;border-radius:12px;background:#081116;color:white;padding:10px"
+        >${code}</textarea>
+
+        <p class="tiny">
+          Code preview sections:
+          L = story levels cleared,
+          T = Twigs,
+          S = Sticks,
+          D = encoded save data,
+          C = typo/broken-code checker.
+        </p>
+      </div>
+    </div>
+  `);
+}
+
+
+
+
+
 
 function showUpgrades() {
   currentScreen = "upgrades";
