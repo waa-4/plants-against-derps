@@ -1,43 +1,23 @@
 // ============================================================
-// Plants Against Derps v2
-// Clean remake.
-// Paste Part 1, Part 2, Part 3, and Part 4 directly together.
+// Plants Against Derps v2.5 - Bullcrap Replacement Edition
+// Clean single-file replacement for main.js.
+// Features: direct image paths, pink-square fallback, fixed unlocks,
+// loadout picker, upgrades, minigames, chess 1-4, enemy sizes/hitboxes,
+// critical hits, alien gunner shots, speed buttons, pause, special plants.
 // ============================================================
 
 "use strict";
 
-// ============================================================
-// 1. EASY CONFIG
-// ============================================================
-
 const CONFIG = {
   gameTitle: "Plants Against Derps",
+  saveKey: "plantsAgainstDerps_v25_save",
 
-  saveKey: "plantsAgainstDerps_v2_save",
+  board: { canvasW: 900, canvasH: 520, rows: 5, cols: 9, gridX: 80, gridY: 78, cellW: 86, cellH: 82 },
 
-  board: {
-    canvasW: 900,
-    canvasH: 520,
-
-    rows: 5,
-    cols: 9,
-
-    gridX: 80,
-    gridY: 78,
-
-    cellW: 86,
-    cellH: 82
-  },
-
-  currency: {
-    name: "Twigs",
-    minWinReward: 5,
-    maxWinReward: 15
-  },
+  currency: { name: "Twigs", minWinReward: 7, maxWinReward: 18 },
 
   audio: {
     enabled: true,
-
     tracks: {
       menu: "audio/mainmenubeat.m4a",
       world1: "audio/PAD-Theme1Remaster.m4a",
@@ -46,14 +26,8 @@ const CONFIG = {
       victory: "audio/derpvictorytheme.m4a",
       finalBoss: "audio/nerd.m4a"
     },
-
-    menuTrack: "menu",
-    defaultLevelTrack: "world1",
-    victoryTrack: "victory",
-
-    musicVolume: 0.45,
-    victoryVolume: 0.55,
-    sfxVolume: 0.035
+    menuTrack: "menu", defaultLevelTrack: "world1", victoryTrack: "victory",
+    musicVolume: 0.42, victoryVolume: 0.55, sfxVolume: 0.035
   },
 
   backgrounds: {
@@ -61,295 +35,86 @@ const CONFIG = {
     desert: "assets/bg-desert.png",
     cloud: "assets/bg-cloud.png",
     milkyway: "assets/bg-milkyway.png",
-    chess: "assets/bg-chess.png"
+    chess: "assets/bg-chess.png",
+    debugHill: "assets/bg_debug_hill.png",
+    matrixGrid: "assets/bg_matrix_grid.png",
+    glitchArchive: "assets/bg_glitch_archive.png"
   },
 
   images: {
     removeTool: "assets/remove-tool.png",
-
     campfr: "assets/plant-campfr.png",
     treeGun: "assets/plant-tree-gun.png",
     rosegun: "assets/rosegun.png",
     soggyMattress: "assets/soggy-mattress.png",
     kaboom: "assets/plant-el-kaboom.png",
     bucketStalk: "assets/bucketboi.png",
+    glowMush: "assets/glowmush.png",
+    solarPanel: "assets/solarpanel.png",
+    taxRock: "assets/taxrock.png",
+    cardboardWall: "assets/cardboardwall.png",
+    rustyFridge: "assets/rustyfridge.png",
+    cloudPopper: "assets/cloudpopper.png",
+    starfruitKnockoff: "assets/starfruitknockoff.png",
+    beachBall: "assets/beachball.png",
 
     basicDerp: "assets/enemy-basic-derp.png",
     armoredDerp: "assets/enemy-armored-derp.png",
     fastDerp: "assets/enemy-fast-derp.png",
     assasinRover: "assets/assasin-rover.png",
     mechaDerp: "assets/mechaderp.png",
-    alien: "assets/alien.png",
+    alien: "assets/alien1.png",
     alienGod: "assets/aliengod.png",
     alienFinalBoss: "assets/alienfinalboss.png",
     alienGun: "assets/aliengun.png",
     droneGun: "assets/dronegun.png",
-    droneSaw: "assets/dronesaw.png",
+    droneSaw: "assets/dronesaw.png"
   },
 
-  upgrades: {
-    maxLevel: 5,
-    baseCost: 30,
-    costPerLevel: 25,
-    hpBoostPerLevel: 15,
-    damageBoostPerLevel: 4,
-    producerBoostPerLevel: 5
-  },
-
-  gameplay: {
-    glowFromEnemy: 5,
-    waveGapTicks: 220,
-    removeRefundPercent: 0.5
-  },
+  upgrades: { maxLevel: 5, baseCost: 30, costPerLevel: 25, hpBoostPerLevel: 18, damageBoostPerLevel: 5, producerBoostPerLevel: 5 },
+  gameplay: { glowFromEnemy: 6, waveGapTicks: 200, removeRefundPercent: 0.5, critChance: 0.08, critMultiplier: 2, maxLoadoutPlants: 5 },
 
   plants: {
-    removeTool: {
-      name: "Remove Tool",
-      cost: 0,
-      hp: 1,
-      img: "removeTool",
-      desc: "Removes a plant and drops half Glow.",
-      role: "Tool",
-      tool: "remove"
-    },
-
-    campfr: {
-      name: "Campfr",
-      cost: 25,
-      hp: 80,
-      img: "campfr",
-      desc: "Makes Glow over time. Basically the weird campfire economy.",
-      role: "Producer",
-
-      producer: true,
-      produceAmount: 25,
-      produceCooldown: 900,
-      placementCooldown: 120
-    },
-
-    bucketStalk: {
-  name: "Bucket-Stalk",
-  cost: 175,
-  hp: 90,
-  img: "bucketStalk",
-  desc: "A tall stalk with a bucket-powered blaster.",
-  role: "Heavy Shooter",
-
-  unlockCost: 8,
-
-  shooter: true,
-  shootCooldown: 210,
-  projectileDamage: 70,
-  projectileSpeed: 6,
-  placementCooldown: 360
-},
-
-    treeGun: {
-      name: "Tree Gun",
-      cost: 75,
-      hp: 100,
-      img: "treeGun",
-      desc: "Shoots derps in its lane. Reliable and not legally a tree.",
-      role: "Shooter",
-
-      shooter: true,
-      shootCooldown: 115,
-      projectileDamage: 24,
-      projectileSpeed: 4.6,
-      placementCooldown: 180
-    },
-
-    rosegun: {
-      name: "Rosegun",
-      cost: 50,
-      hp: 60,
-      img: "rosegun",
-      desc: "Cheaper and weaker than Tree Gun, but sometimes double fires.",
-      role: "Shooter",
-
-      shooter: true,
-      shootCooldown: 100,
-      projectileDamage: 12,
-      projectileSpeed: 5.2,
-      doubleShotChance: 10,
-      placementCooldown: 150
-    },
-
-    soggyMattress: {
-      name: "Soggy Mattress",
-      cost: 50,
-      hp: 170,
-      img: "soggyMattress",
-      desc: "A weaker wall. Somehow defensive. Probably smells terrible.",
-      role: "Wall",
-
-      wall: true,
-      placementCooldown: 210
-    },
-
-    kaboom: {
-      name: "El Kaboom",
-      cost: 225,
-      hp: 40,
-      img: "kaboom",
-      desc: "Explodes after a short fuse. Solves arguments loudly.",
-      role: "Explosive",
-
-      fuse: 90,
-      damage: 180,
-      radius: 140,
-      placementCooldown: 420
-    }
+    removeTool: { name: "Remove Tool", cost: 0, hp: 1, img: "removeTool", desc: "Removes a plant and refunds half Glow.", role: "Tool", tool: "remove" },
+    campfr: { name: "Campfr", cost: 25, hp: 80, img: "campfr", desc: "Makes Glow over time. Weird but useful.", role: "Producer", producer: true, produceAmount: 25, produceCooldown: 900, placementCooldown: 120 },
+    glowMush: { name: "Glow Mush", cost: 15, hp: 45, img: "assets/glowmush.png", desc: "Cheap mini producer. Small economy gremlin.", role: "Mini Producer", producer: true, produceAmount: 12, produceCooldown: 700, placementCooldown: 110 },
+    solarPanel: { name: "Cracked Solar Panel", cost: 125, hp: 70, img: "assets/solarpanel.png", desc: "Slow but chunky Glow production.", role: "Big Producer", unlockCost: 7, producer: true, produceAmount: 70, produceCooldown: 1500, placementCooldown: 300 },
+    taxRock: { name: "Tax Rock", cost: 75, hp: 230, img: "assets/taxrock.png", desc: "Wall that makes Glow when hit. Financially annoying.", role: "Producer Wall", unlockAt: "1-5", wall: true, produceWhenHit: 8, hitProduceCooldown: 24, placementCooldown: 220 },
+    cardboardWall: { name: "Cardboard Wall", cost: 35, hp: 145, img: "assets/cardboardwall.png", desc: "Cheap emergency wall. Probably from a package.", role: "Wall", wall: true, placementCooldown: 150 },
+    soggyMattress: { name: "Soggy Mattress", cost: 50, hp: 190, img: "soggyMattress", desc: "A gross wall with suspicious endurance.", role: "Wall", wall: true, placementCooldown: 210 },
+    rustyFridge: { name: "Rusty Fridge", cost: 150, hp: 520, img: "assets/rustyfridge.png", desc: "Heavy wall. It remembers expired leftovers.", role: "Heavy Wall", unlockAt: "2-3", wall: true, placementCooldown: 380 },
+    treeGun: { name: "Tree Gun", cost: 75, hp: 100, img: "treeGun", desc: "Reliable lane shooter.", role: "Shooter", shooter: true, fireType: "straight", shootCooldown: 115, projectileDamage: 24, projectileSpeed: 4.8, placementCooldown: 180 },
+    rosegun: { name: "Rosegun", cost: 50, hp: 65, img: "rosegun", desc: "Cheap shooter with occasional double fire.", role: "Shooter", shooter: true, fireType: "straight", shootCooldown: 100, projectileDamage: 12, projectileSpeed: 5.2, doubleShotChance: 12, placementCooldown: 150 },
+    bucketStalk: { name: "Bucket-Stalk", cost: 165, hp: 115, img: "assets/bucketboi.png", desc: "A bucket-powered heavy blaster.", role: "Heavy Shooter", unlockCost: 8, shooter: true, fireType: "straight", shootCooldown: 205, projectileDamage: 72, projectileSpeed: 6, placementCooldown: 350 },
+    cloudPopper: { name: "Cloud Popper", cost: 125, hp: 90, img: "assets/cloudpopper.png", desc: "Bonus damage vs drones and aliens.", role: "Anti-Air Shooter", unlockAt: "3-1", shooter: true, fireType: "straight", targetTags: ["drone", "alien"], bonusVsTags: ["drone", "alien"], bonusMultiplier: 1.8, shootCooldown: 95, projectileDamage: 27, projectileSpeed: 6.4, placementCooldown: 240 },
+    starfruitKnockoff: { name: "Starfruit Knockoff", cost: 175, hp: 90, img: "assets/starfruitknockoff.png", desc: "Shoots its lane and nearby lanes. Not suspicious at all.", role: "Multi-Lane Shooter", unlockAt: "3-5", shooter: true, fireType: "multiLane", shootCooldown: 150, projectileDamage: 22, projectileSpeed: 5.6, placementCooldown: 340 },
+    beachBall: { name: "Beach Ball", cost: 100, hp: 1, img: "beachBall", desc: "Click it, then click a tile. It bonks the area and returns.", role: "Launch Special", unlockAt: "2-1", instantLaunch: true, fireType: "beachBall", damage: 105, radius: 105, placementCooldown: 240 },
+    kaboom: { name: "El Kaboom", cost: 225, hp: 40, img: "kaboom", desc: "Explodes after a short fuse.", role: "Explosive", fuse: 90, damage: 190, radius: 145, placementCooldown: 420 }
   },
 
   enemies: {
-    basic: {
-      name: "Da Boiiiiii",
-      hp: 90,
-      speed: 0.14,
-      damage: 10,
-      img: "basicDerp",
-      desc: "The basic derp. Walks forward with questionable confidence."
-    },
-
-    armored: {
-      name: "Armored Da Boiiiiii",
-      hp: 190,
-      speed: 0.22,
-      damage: 16,
-      img: "armoredDerp",
-      desc: "More health. More problem. Mildly rude."
-    },
-
-    fast: {
-      name: "Fast Da Boiiiiii",
-      hp: 65,
-      speed: 0.48,
-      damage: 8,
-      img: "fastDerp",
-      desc: "Fast and annoying. Shows up before you are emotionally ready."
-    },
-
-    assasinRover: {
-      name: "Assasin Rover",
-      hp: 1,
-      speed: 0.75,
-      damage: 50,
-      img: "assasinRover",
-      desc: "One HP glass cannon. If it touches something, pain happens.",
-      fragile: true
-    },
-
-    mechaDerp: {
-      name: "Mecha Derp",
-      hp: 600,
-      speed: 0.16,
-      damage: 28,
-      img: "mechaDerp",
-      desc: "A boss derp with machine energy. Big problem.",
-      boss: true
-    },
-
-    droneGun: {
-  name: "Drone Gun",
-  hp: 90,
-  speed: 0.28,
-  damage: 10,
-  img: "droneGun",
-  desc: "A flying drone with suspiciously good aim."
-},
-
-droneSaw: {
-  name: "Drone Saw",
-  hp: 70,
-  speed: 0.55,
-  damage: 22,
-  img: "droneSaw",
-  desc: "Rushes plants and saws them down. Very rude."
-},
-
-alien: {
-  name: "Odd Alien",
-  hp: 130,
-  speed: 0.20,
-  damage: 12,
-  img: "alien",
-  desc: "A strange alien that showed up during the evacuation."
-},
-
-alienGun: {
-  name: "Alien Gunner",
-  hp: 150,
-  speed: 0.16,
-  damage: 16,
-  img: "alienGun",
-  desc: "Shoots from range once ranged enemies are added."
-},
-
-alienGod: {
-  name: "Alien God",
-  hp: 900,
-  speed: 0.12,
-  damage: 35,
-  img: "alienGod",
-  boss: true,
-  desc: "A cosmic thing that thinks the lawn belongs to it."
-},
-
-alienFinalBoss: {
-  name: "The Star-Eyed One",
-  hp: 1800,
-  speed: 0.10,
-  damage: 45,
-  img: "alienFinalBoss",
-  boss: true,
-  desc: "The final space boss. Probably not friendly."
-}
+    basic: { name: "Da Boiiiiii", hp: 90, speed: 0.14, damage: 10, img: "basicDerp", size: 1, desc: "The basic derp." },
+    armored: { name: "Armored Da Boiiiiii", hp: 190, speed: 0.18, damage: 16, img: "armoredDerp", size: 1.08, desc: "More health. More problem." },
+    fast: { name: "Fast Da Boiiiiii", hp: 65, speed: 0.46, damage: 8, img: "fastDerp", size: 0.92, desc: "Fast and annoying." },
+    assasinRover: { name: "Assasin Rover", hp: 1, speed: 0.75, damage: 50, img: "assasinRover", size: 0.82, fragile: true, desc: "One HP glass cannon." },
+    mechaDerp: { name: "Mecha Derp", hp: 620, speed: 0.13, damage: 28, img: "mechaDerp", size: 1.45, boss: true, desc: "Machine boss problem." },
+    droneGun: { name: "Drone Gun", hp: 105, speed: 0.25, damage: 9, img: "droneGun", size: 0.9, tags: ["drone"], flying: true, rangedShooter: true, shootCooldown: 160, shotDamage: 12, shotSpeed: 3.6, desc: "Flying and rude." },
+    droneSaw: { name: "Drone Saw", hp: 75, speed: 0.52, damage: 22, img: "droneSaw", size: 0.85, tags: ["drone"], flying: true, desc: "Rushes plants." },
+    alien: { name: "Odd Alien", hp: 130, speed: 0.19, damage: 12, img: "alien", size: 1, tags: ["alien"], desc: "A strange alien." },
+    alienGun: { name: "Alien Gunner", hp: 155, speed: 0.12, damage: 10, img: "alienGun", size: 1.05, tags: ["alien"], rangedShooter: true, shootCooldown: 130, shotDamage: 16, shotSpeed: 4.2, desc: "Shoots plants from range." },
+    alienGod: { name: "Alien God", hp: 950, speed: 0.105, damage: 35, img: "alienGod", size: 1.65, tags: ["alien"], boss: true, desc: "Cosmic lawn thief." },
+    alienFinalBoss: { name: "The Star-Eyed One", hp: 1900, speed: 0.08, damage: 45, img: "alienFinalBoss", size: 2.05, tags: ["alien"], boss: true, rangedShooter: true, shootCooldown: 100, shotDamage: 22, shotSpeed: 3.8, desc: "Final space boss." }
   },
 
   shopBadges: {
-    proPlanter: {
-      name: "Pro Planter",
-      cost: 50,
-      desc: "You placed plants and felt important."
-    },
-
-    kaboomMaster: {
-      name: "Kaboom Master",
-      cost: 75,
-      desc: "Explosions solved your problems."
-    },
-
-    derpDeleter: {
-      name: "Derp Deleter",
-      cost: 100,
-      desc: "Many derps were removed from existence."
-    },
-
-    twigCollector: {
-      name: "Twig Collector",
-      cost: 125,
-      desc: "You collected sticks with financial intent."
-    },
-
-    backgroundEnjoyer: {
-      name: "Background Enjoyer",
-      cost: 175,
-      desc: "You witnessed the lawn become more than tiles."
-    },
-
-    
+    proPlanter: { name: "Pro Planter", cost: 50, desc: "You placed plants and felt important." },
+    kaboomMaster: { name: "Kaboom Master", cost: 75, desc: "Explosions solved your problems." },
+    derpDeleter: { name: "Derp Deleter", cost: 100, desc: "Many derps were removed from existence." },
+    twigCollector: { name: "Twig Collector", cost: 125, desc: "You collected sticks with financial intent." },
+    backgroundEnjoyer: { name: "Background Enjoyer", cost: 175, desc: "You witnessed the lawn become more than tiles." }
   },
 
-  defaultLoadout: [
-    "removeTool",
-    "campfr",
-    "treeGun",
-    "rosegun",
-    "soggyMattress",
-    "kaboom"
-  ],
-
+  defaultLoadout: ["campfr", "treeGun", "rosegun", "soggyMattress", "kaboom"],
   levels: [
     {
       name: "1-1",
@@ -662,7 +427,7 @@ alienFinalBoss: {
           { type: "fast", row: 4, delay: 280 },
           { type: "fast", row: 3, delay: 460 }
         ],
-        [
+                [
           { type: "mechaDerp", row: 0, delay: 110 },
           { type: "armored", row: 4, delay: 270 },
           { type: "fast", row: 2, delay: 430 }
@@ -675,1086 +440,978 @@ alienFinalBoss: {
       lava: []
     },
     {
-  name: "2-5",
-  title: "Sand in the Wires",
-  desc: "The machines are getting crunchy.",
-  startGlow: 175,
-  background: "desert",
-  music: "desert",
-  waves: [
-    [
-      { type: "basic", row: 0, delay: 80 },
-      { type: "basic", row: 2, delay: 180 },
-      { type: "basic", row: 4, delay: 280 }
-    ],
-    [
-      { type: "armored", row: 1, delay: 120 },
-      { type: "fast", row: 3, delay: 260 },
-      { type: "armored", row: 4, delay: 440 }
-    ],
-    [
-      { type: "mechaDerp", row: 2, delay: 250 },
-      { type: "assasinRover", row: 0, delay: 520 },
-      { type: "assasinRover", row: 4, delay: 700 }
-    ]
-  ],
-  lava: [[3, 1], [4, 1], [5, 3], [6, 3]]
-},
+      name: "2-5",
+      title: "Sand in the Wires",
+      desc: "The machines are getting crunchy.",
+      startGlow: 175,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "basic", row: 0, delay: 80 },
+          { type: "basic", row: 2, delay: 180 },
+          { type: "basic", row: 4, delay: 280 }
+        ],
+        [
+          { type: "armored", row: 1, delay: 120 },
+          { type: "fast", row: 3, delay: 260 },
+          { type: "armored", row: 4, delay: 440 }
+        ],
+        [
+          { type: "mechaDerp", row: 2, delay: 250 },
+          { type: "assasinRover", row: 0, delay: 520 },
+          { type: "assasinRover", row: 4, delay: 700 }
+        ]
+      ],
+      lava: [[3, 1], [4, 1], [5, 3], [6, 3]]
+    },
     {
-  name: "2-6",
-  title: "Do Not Touch The Red Sand",
-  desc: "That is probably not sand.",
-  startGlow: 225,
-  background: "desert",
-  music: "desert",
-  waves: [
-    [
-      { type: "fast", row: 0, delay: 90 },
-      { type: "fast", row: 4, delay: 210 }
-    ],
-    [
-      { type: "armored", row: 1, delay: 100 },
-      { type: "armored", row: 3, delay: 260 },
-      { type: "basic", row: 2, delay: 380 }
-    ],
-    [
-      { type: "mechaDerp", row: 1, delay: 280 },
-      { type: "mechaDerp", row: 3, delay: 520 }
-    ]
-  ],
-  lava: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [6, 2]]
-},
+      name: "2-6",
+      title: "Do Not Touch The Red Sand",
+      desc: "That is probably not sand.",
+      startGlow: 225,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "fast", row: 0, delay: 90 },
+          { type: "fast", row: 4, delay: 210 }
+        ],
+        [
+          { type: "armored", row: 1, delay: 100 },
+          { type: "armored", row: 3, delay: 260 },
+          { type: "basic", row: 2, delay: 380 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 280 },
+          { type: "mechaDerp", row: 3, delay: 520 }
+        ]
+      ],
+      lava: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [6, 2]]
+    },
     {
-  name: "2-7",
-  title: "Rover Practice",
-  desc: "They keep sending the tiny murder cars.",
-  startGlow: 300,
-  background: "desert",
-  music: "desert",
-  waves: [
-    [
-      { type: "assasinRover", row: 0, delay: 120 },
-      { type: "assasinRover", row: 2, delay: 260 },
-      { type: "assasinRover", row: 4, delay: 400 }
-    ],
-    [
-      { type: "basic", row: 1, delay: 80 },
-      { type: "assasinRover", row: 1, delay: 250 },
-      { type: "armored", row: 3, delay: 420 }
-    ],
-    [
-      { type: "fast", row: 0, delay: 110 },
-      { type: "fast", row: 4, delay: 180 },
-      { type: "assasinRover", row: 2, delay: 360 },
-      { type: "mechaDerp", row: 2, delay: 620 }
-    ]
-  ],
-  lava: [[4, 0], [4, 4]]
-},
+      name: "2-7",
+      title: "Rover Practice",
+      desc: "They keep sending the tiny murder cars.",
+      startGlow: 300,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "assasinRover", row: 0, delay: 120 },
+          { type: "assasinRover", row: 2, delay: 260 },
+          { type: "assasinRover", row: 4, delay: 400 }
+        ],
+        [
+          { type: "basic", row: 1, delay: 80 },
+          { type: "assasinRover", row: 1, delay: 250 },
+          { type: "armored", row: 3, delay: 420 }
+        ],
+        [
+          { type: "fast", row: 0, delay: 110 },
+          { type: "fast", row: 4, delay: 180 },
+          { type: "assasinRover", row: 2, delay: 360 },
+          { type: "mechaDerp", row: 2, delay: 620 }
+        ]
+      ],
+      lava: [[4, 0], [4, 4]]
+    },
     {
-  name: "2-8",
-  title: "The Campfire Is Not Safe",
-  desc: "They found your Glow economy.",
-  startGlow: 100,
-  background: "desert",
-  music: "desert",
-  waves: [
-    [
-      { type: "basic", row: 2, delay: 90 },
-      { type: "fast", row: 2, delay: 230 }
-    ],
-    [
-      { type: "assasinRover", row: 1, delay: 120 },
-      { type: "assasinRover", row: 3, delay: 280 },
-      { type: "armored", row: 2, delay: 460 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 250 },
-      { type: "mechaDerp", row: 4, delay: 450 },
-      { type: "fast", row: 2, delay: 650 }
-    ]
-  ],
-  lava: [[5, 1], [5, 2], [5, 3]]
-},
+      name: "2-8",
+      title: "The Campfire Is Not Safe",
+      desc: "They found your Glow economy.",
+      startGlow: 100,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "basic", row: 2, delay: 90 },
+          { type: "fast", row: 2, delay: 230 }
+        ],
+        [
+          { type: "assasinRover", row: 1, delay: 120 },
+          { type: "assasinRover", row: 3, delay: 280 },
+          { type: "armored", row: 2, delay: 460 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 250 },
+          { type: "mechaDerp", row: 4, delay: 450 },
+          { type: "fast", row: 2, delay: 650 }
+        ]
+      ],
+      lava: [[5, 1], [5, 2], [5, 3]]
+    },
     {
-  name: "2-9",
-  title: "Mecha Derp Parking Lot",
-  desc: "Why are there so many of them.",
-  startGlow: 500,
-  background: "desert",
-  music: "desert",
-  waves: [
-    [
-      { type: "mechaDerp", row: 0, delay: 180 },
-      { type: "mechaDerp", row: 4, delay: 360 }
-    ],
-    [
-      { type: "armored", row: 1, delay: 100 },
-      { type: "armored", row: 3, delay: 180 },
-      { type: "assasinRover", row: 2, delay: 400 }
-    ],
-    [
-      { type: "mechaDerp", row: 1, delay: 200 },
-      { type: "mechaDerp", row: 2, delay: 420 },
-      { type: "mechaDerp", row: 3, delay: 640 }
-    ]
-  ],
-  lava: [[3, 0], [3, 2], [3, 4], [6, 1], [6, 3]]
-},
-
-    {
-  name: "2-10",
-  title: "Derp Factory Shutdown",
-  desc: "Final desert level. Turn the machines into scrap before they escape upward.",
-  startGlow: 800,
-  background: "desert",
-  music: "desert",
-  waves: [
-    [
-      { type: "armored", row: 0, delay: 80 },
-      { type: "armored", row: 2, delay: 180 },
-      { type: "armored", row: 4, delay: 280 }
-    ],
-    [
-      { type: "fast", row: 1, delay: 90 },
-      { type: "assasinRover", row: 3, delay: 250 },
-      { type: "mechaDerp", row: 2, delay: 430 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 170 },
-      { type: "mechaDerp", row: 4, delay: 330 },
-      { type: "assasinRover", row: 2, delay: 520 }
-    ],
-    [
-      { type: "mechaDerp", row: 1, delay: 240 },
-      { type: "mechaDerp", row: 2, delay: 420 },
-      { type: "mechaDerp", row: 3, delay: 600 },
-      { type: "assasinRover", row: 0, delay: 820 },
-      { type: "assasinRover", row: 4, delay: 900 }
-    ]
-  ],
-  lava: [[4, 0], [4, 1], [4, 3], [4, 4], [6, 2]]
-},
-
-{
-  name: "3-1",
-  title: "Evacuation Gone Wrong",
-  desc: "The clouds were supposed to be safe. They were not.",
-  startGlow: 175,
-  background: "cloud",
-  music: "world1",
-  waves: [
-    [
-      { type: "basic", row: 2, delay: 100 },
-      { type: "fast", row: 1, delay: 240 },
-      { type: "fast", row: 3, delay: 380 }
-    ],
-    [
-      { type: "droneSaw", row: 0, delay: 160 },
-      { type: "basic", row: 2, delay: 300 },
-      { type: "droneSaw", row: 4, delay: 460 }
-    ],
-    [
-      { type: "armored", row: 1, delay: 160 },
-      { type: "droneSaw", row: 3, delay: 360 },
-      { type: "fast", row: 2, delay: 520 }
-    ]
-  ],
-  lava: [[4, 1], [4, 3]]
-},
-
-{
-  name: "3-2",
-  title: "Cloud Traffic",
-  desc: "The sky has lanes now. Nobody is following them.",
-  startGlow: 200,
-  background: "cloud",
-  music: "menu",
-  waves: [
-    [
-      { type: "fast", row: 0, delay: 90 },
-      { type: "fast", row: 4, delay: 210 }
-    ],
-    [
-      { type: "droneSaw", row: 1, delay: 120 },
-      { type: "droneSaw", row: 3, delay: 260 },
-      { type: "basic", row: 2, delay: 390 }
-    ],
-    [
-      { type: "armored", row: 0, delay: 160 },
-      { type: "armored", row: 4, delay: 320 },
-      { type: "droneSaw", row: 2, delay: 500 }
-    ]
-  ],
-  lava: [[5, 2]]
-},
-
-{
-  name: "3-3",
-  title: "Drone Delivery Failure",
-  desc: "Nobody ordered this many flying problems.",
-  startGlow: 250,
-  background: "cloud",
-  music: "battle",
-  waves: [
-    [
-      { type: "droneSaw", row: 1, delay: 100 },
-      { type: "droneSaw", row: 3, delay: 190 },
-      { type: "basic", row: 2, delay: 300 }
-    ],
-    [
-      { type: "assasinRover", row: 0, delay: 120 },
-      { type: "assasinRover", row: 4, delay: 250 },
-      { type: "droneSaw", row: 2, delay: 390 },
-      { type: "armored", row: 2, delay: 560 }
-    ],
-    [
-      { type: "mechaDerp", row: 1, delay: 240 },
-      { type: "mechaDerp", row: 3, delay: 480 },
-      { type: "droneSaw", row: 2, delay: 680 }
-    ]
-  ],
-  lava: [[3, 0], [3, 4], [6, 2]]
-},
-
-{
-  name: "3-4",
-  title: "Alien Airspace",
-  desc: "The derps were bad. The aliens are worse.",
-  startGlow: 275,
-  background: "cloud",
-  music: "desert",
-  waves: [
-    [
-      { type: "alien", row: 0, delay: 120 },
-      { type: "alien", row: 2, delay: 240 },
-      { type: "alien", row: 4, delay: 360 }
-    ],
-    [
-      { type: "droneSaw", row: 1, delay: 120 },
-      { type: "fast", row: 3, delay: 260 },
-      { type: "alien", row: 2, delay: 430 }
-    ],
-    [
-      { type: "alien", row: 0, delay: 170 },
-      { type: "armored", row: 2, delay: 320 },
-      { type: "alien", row: 4, delay: 470 }
-    ]
-  ],
-  lava: [[4, 1], [5, 1], [4, 3], [5, 3]]
-},
-
-{
-  name: "3-5",
-  title: "Pew Pew Panic",
-  desc: "Some aliens remembered they have weapons.",
-  startGlow: 300,
-  background: "cloud",
-  music: "world1",
-  waves: [
-    [
-      { type: "alienGun", row: 2, delay: 180 }
-    ],
-    [
-      { type: "alien", row: 0, delay: 100 },
-      { type: "alienGun", row: 1, delay: 260 },
-      { type: "droneSaw", row: 4, delay: 420 }
-    ],
-    [
-      { type: "alienGun", row: 3, delay: 160 },
-      { type: "droneSaw", row: 1, delay: 320 },
-      { type: "armored", row: 2, delay: 500 }
-    ],
-    [
-      { type: "alienGun", row: 0, delay: 220 },
-      { type: "alienGun", row: 4, delay: 420 },
-      { type: "fast", row: 2, delay: 620 }
-    ]
-  ],
-  lava: [[2, 2], [6, 2]]
-},
-
-{
-  name: "3-6",
-  title: "Emergency Exit Blocked",
-  desc: "The evacuation path is blocked by drones, aliens, and bad planning.",
-  startGlow: 325,
-  background: "cloud",
-  music: "menu",
-  waves: [
-    [
-      { type: "droneSaw", row: 0, delay: 90 },
-      { type: "droneSaw", row: 4, delay: 210 },
-      { type: "alien", row: 2, delay: 360 }
-    ],
-    [
-      { type: "alienGun", row: 1, delay: 140 },
-      { type: "alienGun", row: 3, delay: 300 },
-      { type: "fast", row: 2, delay: 460 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 220 },
-      { type: "alien", row: 2, delay: 420 },
-      { type: "mechaDerp", row: 4, delay: 620 }
-    ],
-    [
-      { type: "assasinRover", row: 1, delay: 180 },
-      { type: "assasinRover", row: 3, delay: 320 },
-      { type: "alienGun", row: 2, delay: 520 }
-    ]
-  ],
-  lava: [[3, 1], [3, 3], [5, 1], [5, 3]]
-},
-
-{
-  name: "3-7",
-  title: "Floating Platform Incident",
-  desc: "Several platforms are gone. Please pretend this is fine.",
-  startGlow: 350,
-  background: "cloud",
-  music: "desert",
-  waves: [
-    [
-      { type: "alien", row: 1, delay: 100 },
-      { type: "alien", row: 3, delay: 230 }
-    ],
-    [
-      { type: "droneSaw", row: 0, delay: 80 },
-      { type: "droneSaw", row: 2, delay: 210 },
-      { type: "droneSaw", row: 4, delay: 340 }
-    ],
-    [
-      { type: "alienGun", row: 1, delay: 150 },
-      { type: "alienGun", row: 3, delay: 330 },
-      { type: "armored", row: 2, delay: 520 }
-    ],
-    [
-      { type: "mechaDerp", row: 2, delay: 280 },
-      { type: "droneSaw", row: 0, delay: 520 },
-      { type: "droneSaw", row: 4, delay: 620 }
-    ]
-  ],
-  lava: [[1, 0], [1, 4], [4, 2], [7, 0], [7, 4]]
-},
-
-{
-  name: "3-8",
-  title: "Alien Blockade",
-  desc: "The aliens are not letting anything leave.",
-  startGlow: 400,
-  background: "cloud",
-  music: "battle",
-  waves: [
-    [
-      { type: "alien", row: 0, delay: 90 },
-      { type: "alien", row: 2, delay: 190 },
-      { type: "alien", row: 4, delay: 290 }
-    ],
-    [
-      { type: "alienGun", row: 1, delay: 130 },
-      { type: "alienGun", row: 3, delay: 260 },
-      { type: "droneSaw", row: 2, delay: 420 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 200 },
-      { type: "alien", row: 2, delay: 400 },
-      { type: "mechaDerp", row: 4, delay: 600 }
-    ],
-    [
-      { type: "alienGun", row: 0, delay: 150 },
-      { type: "alienGun", row: 4, delay: 300 },
-      { type: "assasinRover", row: 2, delay: 470 },
-      { type: "droneSaw", row: 1, delay: 620 },
-      { type: "droneSaw", row: 3, delay: 760 }
-    ]
-  ],
-  lava: [[4, 0], [4, 4], [5, 1], [5, 3]]
-},
-
-{
-  name: "3-9",
-  title: "Cloud Base Collapse",
-  desc: "The clouds are falling apart and everyone is still attacking you for some reason.",
-  startGlow: 500,
-  background: "cloud",
-  music: "world1",
-  waves: [
-    [
-      { type: "droneSaw", row: 0, delay: 80 },
-      { type: "alien", row: 1, delay: 180 },
-      { type: "alien", row: 3, delay: 300 },
-      { type: "droneSaw", row: 4, delay: 420 }
-    ],
-    [
-      { type: "alienGun", row: 2, delay: 160 },
-      { type: "mechaDerp", row: 0, delay: 360 },
-      { type: "mechaDerp", row: 4, delay: 560 }
-    ],
-    [
-      { type: "alienGod", row: 2, delay: 420 }
-    ],
-    [
-      { type: "assasinRover", row: 1, delay: 120 },
-      { type: "assasinRover", row: 3, delay: 240 },
-      { type: "alienGun", row: 0, delay: 420 },
-      { type: "alienGun", row: 4, delay: 560 }
-    ]
-  ],
-  lava: [[2, 1], [2, 3], [4, 0], [4, 4], [6, 2]]
-},
-
-{
-  name: "3-10",
-  title: "Evacuation Final Call",
-  desc: "The final sky escape. The alien boss does not approve.",
-  startGlow: 900,
-  background: "cloud",
-  music: "finalBoss",
-  waves: [
-    [
-      { type: "alien", row: 0, delay: 80 },
-      { type: "alien", row: 2, delay: 180 },
-      { type: "alien", row: 4, delay: 280 }
-    ],
-    [
-      { type: "droneSaw", row: 1, delay: 120 },
-      { type: "droneSaw", row: 3, delay: 260 },
-      { type: "alienGun", row: 2, delay: 420 }
-    ],
-    [
-      { type: "alienGod", row: 0, delay: 280 },
-      { type: "alienGod", row: 4, delay: 520 }
-    ],
-    [
-      { type: "alienGun", row: 1, delay: 120 },
-      { type: "alienGun", row: 3, delay: 260 },
-      { type: "droneSaw", row: 2, delay: 420 },
-      { type: "assasinRover", row: 0, delay: 620 },
-      { type: "assasinRover", row: 4, delay: 760 }
-    ],
-    [
-      { type: "alienFinalBoss", row: 2, delay: 500 },
-      { type: "alienGod", row: 1, delay: 900 },
-      { type: "alienGod", row: 3, delay: 1120 }
-    ]
-  ],
-  lava: [[3, 0], [3, 4], [4, 1], [4, 3], [6, 0], [6, 4]]
-},
+      name: "2-9",
+      title: "Mecha Derp Parking Lot",
+      desc: "Why are there so many of them.",
+      startGlow: 500,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "mechaDerp", row: 0, delay: 180 },
+          { type: "mechaDerp", row: 4, delay: 360 }
+        ],
+        [
+          { type: "armored", row: 1, delay: 100 },
+          { type: "armored", row: 3, delay: 180 },
+          { type: "assasinRover", row: 2, delay: 400 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 200 },
+          { type: "mechaDerp", row: 2, delay: 420 },
+          { type: "mechaDerp", row: 3, delay: 640 }
+        ]
+      ],
+      lava: [[3, 0], [3, 2], [3, 4], [6, 1], [6, 3]]
+    },
 
     {
-  name: "4-1",
-  title: "Welcome To Space, Sadly",
-  desc: "The evacuation worked. The destination did not.",
-  startGlow: 500,
-  background: "milkyway",
-  music: "world1",
-  waves: [
-    [
-      { type: "alien", row: 0, delay: 90 },
-      { type: "alien", row: 2, delay: 190 },
-      { type: "alien", row: 4, delay: 290 }
-    ],
-    [
-      { type: "droneSaw", row: 1, delay: 100 },
-      { type: "droneSaw", row: 3, delay: 240 },
-      { type: "alienGun", row: 2, delay: 420 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 200 },
-      { type: "mechaDerp", row: 4, delay: 420 },
-      { type: "alien", row: 2, delay: 620 }
-    ]
-  ],
-  lava: [[4, 2], [6, 1], [6, 3]]
-},
-
-{
-  name: "4-2",
-  title: "Low Gravity, High Problems",
-  desc: "Everything is floating except your stress.",
-  startGlow: 550,
-  background: "milkyway",
-  music: "menu",
-  waves: [
-    [
-      { type: "fast", row: 0, delay: 80 },
-      { type: "droneSaw", row: 1, delay: 170 },
-      { type: "fast", row: 3, delay: 260 },
-      { type: "droneSaw", row: 4, delay: 350 }
-    ],
-    [
-      { type: "alienGun", row: 0, delay: 160 },
-      { type: "alienGun", row: 4, delay: 320 },
-      { type: "assasinRover", row: 2, delay: 500 }
-    ],
-    [
-      { type: "alien", row: 1, delay: 130 },
-      { type: "alien", row: 3, delay: 260 },
-      { type: "mechaDerp", row: 2, delay: 520 }
-    ]
-  ],
-  lava: [[3, 0], [3, 4], [5, 2], [7, 1], [7, 3]]
-},
-
-{
-  name: "4-3",
-  title: "Satellite Yard Sale",
-  desc: "Old space junk is now attacking you. Somehow.",
-  startGlow: 600,
-  background: "milkyway",
-  music: "desert",
-  waves: [
-    [
-      { type: "armored", row: 1, delay: 100 },
-      { type: "armored", row: 3, delay: 240 },
-      { type: "droneSaw", row: 2, delay: 380 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 170 },
-      { type: "alienGun", row: 2, delay: 360 },
-      { type: "mechaDerp", row: 4, delay: 550 }
-    ],
-    [
-      { type: "droneSaw", row: 0, delay: 80 },
-      { type: "droneSaw", row: 1, delay: 160 },
-      { type: "droneSaw", row: 3, delay: 300 },
-      { type: "droneSaw", row: 4, delay: 380 },
-      { type: "alien", row: 2, delay: 560 }
-    ]
-  ],
-  lava: [[2, 2], [4, 0], [4, 4], [6, 2]]
-},
-
-{
-  name: "4-4",
-  title: "Cosmic Toll Booth",
-  desc: "The aliens are charging you for existing in space.",
-  startGlow: 625,
-  background: "milkyway",
-  music: "battle",
-  waves: [
-    [
-      { type: "alienGun", row: 1, delay: 120 },
-      { type: "alienGun", row: 3, delay: 260 }
-    ],
-    [
-      { type: "alien", row: 0, delay: 90 },
-      { type: "alien", row: 2, delay: 210 },
-      { type: "alien", row: 4, delay: 330 },
-      { type: "assasinRover", row: 2, delay: 520 }
-    ],
-    [
-      { type: "alienGod", row: 2, delay: 430 }
-    ],
-    [
-      { type: "droneSaw", row: 0, delay: 100 },
-      { type: "droneSaw", row: 4, delay: 210 },
-      { type: "alienGun", row: 1, delay: 380 },
-      { type: "alienGun", row: 3, delay: 520 }
-    ]
-  ],
-  lava: [[3, 1], [3, 3], [5, 0], [5, 4], [7, 2]]
-},
-
-{
-  name: "4-5",
-  title: "Meteor Insurance Scam",
-  desc: "Nobody told you the meteor policy expired.",
-  startGlow: 700,
-  background: "milkyway",
-  music: "world1",
-  waves: [
-    [
-      { type: "mechaDerp", row: 1, delay: 180 },
-      { type: "mechaDerp", row: 3, delay: 360 }
-    ],
-    [
-      { type: "alienGun", row: 0, delay: 140 },
-      { type: "alienGun", row: 4, delay: 280 },
-      { type: "droneSaw", row: 2, delay: 460 }
-    ],
-    [
-      { type: "alienGod", row: 0, delay: 260 },
-      { type: "alienGod", row: 4, delay: 520 }
-    ],
-    [
-      { type: "assasinRover", row: 1, delay: 130 },
-      { type: "assasinRover", row: 3, delay: 260 },
-      { type: "alien", row: 2, delay: 430 },
-      { type: "mechaDerp", row: 2, delay: 650 }
-    ]
-  ],
-  lava: [[2, 0], [2, 4], [4, 1], [4, 3], [6, 2]]
-},
-
-{
-  name: "4-6",
-  title: "Starship Parking Violation",
-  desc: "Every ship parked here is angry at you.",
-  startGlow: 750,
-  background: "milkyway",
-  music: "menu",
-  waves: [
-    [
-      { type: "droneSaw", row: 0, delay: 70 },
-      { type: "droneSaw", row: 2, delay: 180 },
-      { type: "droneSaw", row: 4, delay: 290 }
-    ],
-    [
-      { type: "alienGun", row: 1, delay: 120 },
-      { type: "alienGun", row: 3, delay: 240 },
-      { type: "alien", row: 2, delay: 390 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 200 },
-      { type: "mechaDerp", row: 2, delay: 420 },
-      { type: "mechaDerp", row: 4, delay: 640 }
-    ],
-    [
-      { type: "alienGod", row: 1, delay: 330 },
-      { type: "alienGod", row: 3, delay: 620 }
-    ]
-  ],
-  lava: [[1, 2], [3, 0], [3, 4], [5, 1], [5, 3], [7, 2]]
-},
-
-{
-  name: "4-7",
-  title: "The Stars Are Staring",
-  desc: "The background is not just a background anymore.",
-  startGlow: 825,
-  background: "milkyway",
-  music: "desert",
-  waves: [
-    [
-      { type: "alien", row: 0, delay: 80 },
-      { type: "alienGun", row: 2, delay: 220 },
-      { type: "alien", row: 4, delay: 360 }
-    ],
-    [
-      { type: "alienGod", row: 2, delay: 360 },
-      { type: "droneSaw", row: 0, delay: 650 },
-      { type: "droneSaw", row: 4, delay: 760 }
-    ],
-    [
-      { type: "alienGun", row: 0, delay: 120 },
-      { type: "alienGun", row: 1, delay: 240 },
-      { type: "alienGun", row: 3, delay: 400 },
-      { type: "alienGun", row: 4, delay: 520 }
-    ],
-    [
-      { type: "mechaDerp", row: 1, delay: 220 },
-      { type: "mechaDerp", row: 3, delay: 440 },
-      { type: "alienGod", row: 2, delay: 780 }
-    ]
-  ],
-  lava: [[2, 1], [2, 3], [4, 2], [6, 1], [6, 3], [8, 2]]
-},
-
-{
-  name: "4-8",
-  title: "Alien God Reunion",
-  desc: "There are several of them. This was not in the plan.",
-  startGlow: 950,
-  background: "milkyway",
-  music: "battle",
-  waves: [
-    [
-      { type: "alienGod", row: 0, delay: 220 },
-      { type: "alienGod", row: 4, delay: 440 }
-    ],
-    [
-      { type: "droneSaw", row: 1, delay: 90 },
-      { type: "droneSaw", row: 2, delay: 180 },
-      { type: "droneSaw", row: 3, delay: 270 },
-      { type: "alienGun", row: 2, delay: 520 }
-    ],
-    [
-      { type: "alienGod", row: 1, delay: 260 },
-      { type: "alienGod", row: 3, delay: 520 },
-      { type: "assasinRover", row: 0, delay: 760 },
-      { type: "assasinRover", row: 4, delay: 860 }
-    ],
-    [
-      { type: "mechaDerp", row: 0, delay: 170 },
-      { type: "mechaDerp", row: 4, delay: 340 },
-      { type: "alienGun", row: 1, delay: 520 },
-      { type: "alienGun", row: 3, delay: 700 },
-      { type: "alienGod", row: 2, delay: 980 }
-    ]
-  ],
-  lava: [[3, 0], [3, 1], [3, 3], [3, 4], [6, 0], [6, 4]]
-},
-
-{
-  name: "4-9",
-  title: "Before The Real Problem",
-  desc: "The universe is spamming warnings and none of them are helpful.",
-  startGlow: 1200,
-  background: "milkyway",
-  music: "world1",
-  waves: [
-    [
-      { type: "alien", row: 0, delay: 70 },
-      { type: "alien", row: 1, delay: 140 },
-      { type: "alien", row: 2, delay: 210 },
-      { type: "alien", row: 3, delay: 280 },
-      { type: "alien", row: 4, delay: 350 }
-    ],
-    [
-      { type: "droneSaw", row: 0, delay: 80 },
-      { type: "droneSaw", row: 4, delay: 160 },
-      { type: "assasinRover", row: 1, delay: 300 },
-      { type: "assasinRover", row: 3, delay: 430 },
-      { type: "alienGun", row: 2, delay: 620 }
-    ],
-    [
-      { type: "alienGod", row: 0, delay: 260 },
-      { type: "alienGod", row: 2, delay: 520 },
-      { type: "alienGod", row: 4, delay: 780 }
-    ],
-    [
-      { type: "mechaDerp", row: 1, delay: 150 },
-      { type: "mechaDerp", row: 3, delay: 320 },
-      { type: "alienGun", row: 0, delay: 500 },
-      { type: "alienGun", row: 4, delay: 680 },
-      { type: "droneSaw", row: 2, delay: 860 }
-    ],
-    [
-      { type: "alienFinalBoss", row: 2, delay: 600 },
-      { type: "alienGod", row: 0, delay: 980 },
-      { type: "alienGod", row: 4, delay: 1180 },
-      { type: "assasinRover", row: 1, delay: 1420 },
-      { type: "assasinRover", row: 3, delay: 1540 }
-    ]
-  ],
-  lava: [[2, 0], [2, 4], [4, 1], [4, 3], [5, 2], [7, 0], [7, 4]]
-},
+      name: "2-10",
+      title: "Derp Factory Shutdown",
+      desc: "Final desert level. Turn the machines into scrap before they escape upward.",
+      startGlow: 800,
+      background: "desert",
+      music: "desert",
+      waves: [
+        [
+          { type: "armored", row: 0, delay: 80 },
+          { type: "armored", row: 2, delay: 180 },
+          { type: "armored", row: 4, delay: 280 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 90 },
+          { type: "assasinRover", row: 3, delay: 250 },
+          { type: "mechaDerp", row: 2, delay: 430 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 170 },
+          { type: "mechaDerp", row: 4, delay: 330 },
+          { type: "assasinRover", row: 2, delay: 520 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 240 },
+          { type: "mechaDerp", row: 2, delay: 420 },
+          { type: "mechaDerp", row: 3, delay: 600 },
+          { type: "assasinRover", row: 0, delay: 820 },
+          { type: "assasinRover", row: 4, delay: 900 }
+        ]
+      ],
+      lava: [[4, 0], [4, 1], [4, 3], [4, 4], [6, 2]]
+    },
 
     {
-  "name": "4-10",
-  "title": "The Great Derpocolypse",
-  "desc": "Look how far you've came. I belive in you.",
-  "startGlow": 200,
-  "background": "milkyway",
-  "music": "finalBoss",
-  "waves": [
-    [
-      {
-        "type": "droneSaw",
-        "row": 2,
-        "delay": 50
-      },
-      {
-        "type": "fast",
-        "row": 2,
-        "delay": 140
-      },
-      {
-        "type": "alienGod",
-        "row": 2,
-        "delay": 360
-      },
-      {
-        "type": "alien",
-        "row": 0,
-        "delay": 480
-      },
-      {
-        "type": "alienGod",
-        "row": 1,
-        "delay": 600
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 4,
-        "delay": 720
-      }
-    ],
-    [
-      {
-        "type": "assasinRover",
-        "row": 1,
-        "delay": 120
-      },
-      {
-        "type": "alienGod",
-        "row": 0,
-        "delay": 240
-      },
-      {
-        "type": "alienGun",
-        "row": 2,
-        "delay": 360
-      },
-      {
-        "type": "mechaDerp",
-        "row": 3,
-        "delay": 480
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 2,
-        "delay": 600
-      },
-      {
-        "type": "assasinRover",
-        "row": 4,
-        "delay": 720
-      }
-    ],
-    [
-      {
-        "type": "alienFinalBoss",
-        "row": 0,
-        "delay": 120
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 1,
-        "delay": 240
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 2,
-        "delay": 360
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 3,
-        "delay": 480
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 4,
-        "delay": 600
-      },
-      {
-        "type": "mechaDerp",
-        "row": 2,
-        "delay": 720
-      }
-    ],
-    [
-      {
-        "type": "basic",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 240
-      },
-      {
-        "type": "fast",
-        "row": 2,
-        "delay": 360
-      },
-      {
-        "type": "assasinRover",
-        "row": 2,
-        "delay": 480
-      },
-      {
-        "type": "mechaDerp",
-        "row": 2,
-        "delay": 600
-      },
-      {
-        "type": "alien",
-        "row": 2,
-        "delay": 720
-      },
-      {
-        "type": "alienGun",
-        "row": 2,
-        "delay": 840
-      },
-      {
-        "type": "droneSaw",
-        "row": 2,
-        "delay": 960
-      },
-      {
-        "type": "alienGod",
-        "row": 2,
-        "delay": 1080
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 2,
-        "delay": 1200
-      }
-    ],
-    [
-      {
-        "type": "alienGun",
-        "row": 3,
-        "delay": 120
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 2,
-        "delay": 240
-      },
-      {
-        "type": "assasinRover",
-        "row": 1,
-        "delay": 360
-      },
-      {
-        "type": "assasinRover",
-        "row": 4,
-        "delay": 480
-      },
-      {
-        "type": "droneSaw",
-        "row": 0,
-        "delay": 600
-      },
-      {
-        "type": "droneSaw",
-        "row": 0,
-        "delay": 601
-      }
-    ],
-    [
-      {
-        "type": "alienFinalBoss",
-        "row": 4,
-        "delay": 120
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 3,
-        "delay": 240
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 1,
-        "delay": 360
-      },
-      {
-        "type": "alienFinalBoss",
-        "row": 4,
-        "delay": 480
-      }
-    ],
-    [
-      {
-        "type": "assasinRover",
-        "row": 2,
-        "delay": 120
-      }
-    ]
+      name: "3-1",
+      title: "Evacuation Gone Wrong",
+      desc: "The clouds were supposed to be safe. They were not.",
+      startGlow: 175,
+      background: "cloud",
+      music: "world1",
+      waves: [
+        [
+          { type: "basic", row: 2, delay: 100 },
+          { type: "fast", row: 1, delay: 240 },
+          { type: "fast", row: 3, delay: 380 }
+        ],
+        [
+          { type: "droneSaw", row: 0, delay: 160 },
+          { type: "basic", row: 2, delay: 300 },
+          { type: "droneSaw", row: 4, delay: 460 }
+        ],
+        [
+          { type: "armored", row: 1, delay: 160 },
+          { type: "droneSaw", row: 3, delay: 360 },
+          { type: "fast", row: 2, delay: 520 }
+        ]
+      ],
+      lava: [[4, 1], [4, 3]]
+    },
+
+    {
+      name: "3-2",
+      title: "Cloud Traffic",
+      desc: "The sky has lanes now. Nobody is following them.",
+      startGlow: 200,
+      background: "cloud",
+      music: "menu",
+      waves: [
+        [
+          { type: "fast", row: 0, delay: 90 },
+          { type: "fast", row: 4, delay: 210 }
+        ],
+        [
+          { type: "droneSaw", row: 1, delay: 120 },
+          { type: "droneSaw", row: 3, delay: 260 },
+          { type: "basic", row: 2, delay: 390 }
+        ],
+        [
+          { type: "armored", row: 0, delay: 160 },
+          { type: "armored", row: 4, delay: 320 },
+          { type: "droneSaw", row: 2, delay: 500 }
+        ]
+      ],
+      lava: [[5, 2]]
+    },
+
+    {
+      name: "3-3",
+      title: "Drone Delivery Failure",
+      desc: "Nobody ordered this many flying problems.",
+      startGlow: 250,
+      background: "cloud",
+      music: "battle",
+      waves: [
+        [
+          { type: "droneSaw", row: 1, delay: 100 },
+          { type: "droneSaw", row: 3, delay: 190 },
+          { type: "basic", row: 2, delay: 300 }
+        ],
+        [
+          { type: "assasinRover", row: 0, delay: 120 },
+          { type: "assasinRover", row: 4, delay: 250 },
+          { type: "droneSaw", row: 2, delay: 390 },
+          { type: "armored", row: 2, delay: 560 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 240 },
+          { type: "mechaDerp", row: 3, delay: 480 },
+          { type: "droneSaw", row: 2, delay: 680 }
+        ]
+      ],
+      lava: [[3, 0], [3, 4], [6, 2]]
+    },
+
+    {
+      name: "3-4",
+      title: "Alien Airspace",
+      desc: "The derps were bad. The aliens are worse.",
+      startGlow: 275,
+      background: "cloud",
+      music: "desert",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 120 },
+          { type: "alien", row: 2, delay: 240 },
+          { type: "alien", row: 4, delay: 360 }
+        ],
+        [
+          { type: "droneSaw", row: 1, delay: 120 },
+          { type: "fast", row: 3, delay: 260 },
+          { type: "alien", row: 2, delay: 430 }
+        ],
+        [
+          { type: "alien", row: 0, delay: 170 },
+          { type: "armored", row: 2, delay: 320 },
+          { type: "alien", row: 4, delay: 470 }
+        ]
+      ],
+      lava: [[4, 1], [5, 1], [4, 3], [5, 3]]
+    },
+
+    {
+      name: "3-5",
+      title: "Pew Pew Panic",
+      desc: "Some aliens remembered they have weapons.",
+      startGlow: 300,
+      background: "cloud",
+      music: "world1",
+      waves: [
+        [{ type: "alienGun", row: 2, delay: 180 }],
+        [
+          { type: "alien", row: 0, delay: 100 },
+          { type: "alienGun", row: 1, delay: 260 },
+          { type: "droneSaw", row: 4, delay: 420 }
+        ],
+        [
+          { type: "alienGun", row: 3, delay: 160 },
+          { type: "droneSaw", row: 1, delay: 320 },
+          { type: "armored", row: 2, delay: 500 }
+        ],
+        [
+          { type: "alienGun", row: 0, delay: 220 },
+          { type: "alienGun", row: 4, delay: 420 },
+          { type: "fast", row: 2, delay: 620 }
+        ]
+      ],
+      lava: [[2, 2], [6, 2]]
+    },
+
+    {
+      name: "3-6",
+      title: "Emergency Exit Blocked",
+      desc: "The evacuation path is blocked by drones, aliens, and bad planning.",
+      startGlow: 325,
+      background: "cloud",
+      music: "menu",
+      waves: [
+        [
+          { type: "droneSaw", row: 0, delay: 90 },
+          { type: "droneSaw", row: 4, delay: 210 },
+          { type: "alien", row: 2, delay: 360 }
+        ],
+        [
+          { type: "alienGun", row: 1, delay: 140 },
+          { type: "alienGun", row: 3, delay: 300 },
+          { type: "fast", row: 2, delay: 460 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 220 },
+          { type: "alien", row: 2, delay: 420 },
+          { type: "mechaDerp", row: 4, delay: 620 }
+        ],
+        [
+          { type: "assasinRover", row: 1, delay: 180 },
+          { type: "assasinRover", row: 3, delay: 320 },
+          { type: "alienGun", row: 2, delay: 520 }
+        ]
+      ],
+      lava: [[3, 1], [3, 3], [5, 1], [5, 3]]
+    },
+        {
+      name: "3-7",
+      title: "Floating Platform Incident",
+      desc: "Several platforms are gone. Please pretend this is fine.",
+      startGlow: 350,
+      background: "cloud",
+      music: "desert",
+      waves: [
+        [
+          { type: "alien", row: 1, delay: 100 },
+          { type: "alien", row: 3, delay: 230 }
+        ],
+        [
+          { type: "droneSaw", row: 0, delay: 80 },
+          { type: "droneSaw", row: 2, delay: 210 },
+          { type: "droneSaw", row: 4, delay: 340 }
+        ],
+        [
+          { type: "alienGun", row: 1, delay: 150 },
+          { type: "alienGun", row: 3, delay: 330 },
+          { type: "armored", row: 2, delay: 520 }
+        ],
+        [
+          { type: "mechaDerp", row: 2, delay: 280 },
+          { type: "droneSaw", row: 0, delay: 520 },
+          { type: "droneSaw", row: 4, delay: 620 }
+        ]
+      ],
+      lava: [[1, 0], [1, 4], [4, 2], [7, 0], [7, 4]]
+    },
+
+    {
+      name: "3-8",
+      title: "Alien Blockade",
+      desc: "The aliens are not letting anything leave.",
+      startGlow: 400,
+      background: "cloud",
+      music: "battle",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 90 },
+          { type: "alien", row: 2, delay: 190 },
+          { type: "alien", row: 4, delay: 290 }
+        ],
+        [
+          { type: "alienGun", row: 1, delay: 130 },
+          { type: "alienGun", row: 3, delay: 260 },
+          { type: "droneSaw", row: 2, delay: 420 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 200 },
+          { type: "alien", row: 2, delay: 400 },
+          { type: "mechaDerp", row: 4, delay: 600 }
+        ],
+        [
+          { type: "alienGun", row: 0, delay: 150 },
+          { type: "alienGun", row: 4, delay: 300 },
+          { type: "assasinRover", row: 2, delay: 470 },
+          { type: "droneSaw", row: 1, delay: 620 },
+          { type: "droneSaw", row: 3, delay: 760 }
+        ]
+      ],
+      lava: [[4, 0], [4, 4], [5, 1], [5, 3]]
+    },
+
+    {
+      name: "3-9",
+      title: "Cloud Base Collapse",
+      desc: "The clouds are falling apart and everyone is still attacking you for some reason.",
+      startGlow: 500,
+      background: "cloud",
+      music: "world1",
+      waves: [
+        [
+          { type: "droneSaw", row: 0, delay: 80 },
+          { type: "alien", row: 1, delay: 180 },
+          { type: "alien", row: 3, delay: 300 },
+          { type: "droneSaw", row: 4, delay: 420 }
+        ],
+        [
+          { type: "alienGun", row: 2, delay: 160 },
+          { type: "mechaDerp", row: 0, delay: 360 },
+          { type: "mechaDerp", row: 4, delay: 560 }
+        ],
+        [
+          { type: "alienGod", row: 2, delay: 420 }
+        ],
+        [
+          { type: "assasinRover", row: 1, delay: 120 },
+          { type: "assasinRover", row: 3, delay: 240 },
+          { type: "alienGun", row: 0, delay: 420 },
+          { type: "alienGun", row: 4, delay: 560 }
+        ]
+      ],
+      lava: [[2, 1], [2, 3], [4, 0], [4, 4], [6, 2]]
+    },
+
+    {
+      name: "3-10",
+      title: "Evacuation Final Call",
+      desc: "The final sky escape. The alien boss does not approve.",
+      startGlow: 900,
+      background: "cloud",
+      music: "finalBoss",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 80 },
+          { type: "alien", row: 2, delay: 180 },
+          { type: "alien", row: 4, delay: 280 }
+        ],
+        [
+          { type: "droneSaw", row: 1, delay: 120 },
+          { type: "droneSaw", row: 3, delay: 260 },
+          { type: "alienGun", row: 2, delay: 420 }
+        ],
+        [
+          { type: "alienGod", row: 0, delay: 280 },
+          { type: "alienGod", row: 4, delay: 520 }
+        ],
+        [
+          { type: "alienGun", row: 1, delay: 120 },
+          { type: "alienGun", row: 3, delay: 260 },
+          { type: "droneSaw", row: 2, delay: 420 },
+          { type: "assasinRover", row: 0, delay: 620 },
+          { type: "assasinRover", row: 4, delay: 760 }
+        ],
+        [
+          { type: "alienFinalBoss", row: 2, delay: 500 },
+          { type: "alienGod", row: 1, delay: 900 },
+          { type: "alienGod", row: 3, delay: 1120 }
+        ]
+      ],
+      lava: [[3, 0], [3, 4], [4, 1], [4, 3], [6, 0], [6, 4]]
+    },
+
+    {
+      name: "4-1",
+      title: "Welcome To Space, Sadly",
+      desc: "The evacuation worked. The destination did not.",
+      startGlow: 500,
+      background: "milkyway",
+      music: "world1",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 90 },
+          { type: "alien", row: 2, delay: 190 },
+          { type: "alien", row: 4, delay: 290 }
+        ],
+        [
+          { type: "droneSaw", row: 1, delay: 100 },
+          { type: "droneSaw", row: 3, delay: 240 },
+          { type: "alienGun", row: 2, delay: 420 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 200 },
+          { type: "mechaDerp", row: 4, delay: 420 },
+          { type: "alien", row: 2, delay: 620 }
+        ]
+      ],
+      lava: [[4, 2], [6, 1], [6, 3]]
+    },
+
+    {
+      name: "4-2",
+      title: "Low Gravity, High Problems",
+      desc: "Everything is floating except your stress.",
+      startGlow: 550,
+      background: "milkyway",
+      music: "menu",
+      waves: [
+        [
+          { type: "fast", row: 0, delay: 80 },
+          { type: "droneSaw", row: 1, delay: 170 },
+          { type: "fast", row: 3, delay: 260 },
+          { type: "droneSaw", row: 4, delay: 350 }
+        ],
+        [
+          { type: "alienGun", row: 0, delay: 160 },
+          { type: "alienGun", row: 4, delay: 320 },
+          { type: "assasinRover", row: 2, delay: 500 }
+        ],
+        [
+          { type: "alien", row: 1, delay: 130 },
+          { type: "alien", row: 3, delay: 260 },
+          { type: "mechaDerp", row: 2, delay: 520 }
+        ]
+      ],
+      lava: [[3, 0], [3, 4], [5, 2], [7, 1], [7, 3]]
+    },
+
+    {
+      name: "4-3",
+      title: "Satellite Yard Sale",
+      desc: "Old space junk is now attacking you. Somehow.",
+      startGlow: 600,
+      background: "milkyway",
+      music: "desert",
+      waves: [
+        [
+          { type: "armored", row: 1, delay: 100 },
+          { type: "armored", row: 3, delay: 240 },
+          { type: "droneSaw", row: 2, delay: 380 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 170 },
+          { type: "alienGun", row: 2, delay: 360 },
+          { type: "mechaDerp", row: 4, delay: 550 }
+        ],
+        [
+          { type: "droneSaw", row: 0, delay: 80 },
+          { type: "droneSaw", row: 1, delay: 160 },
+          { type: "droneSaw", row: 3, delay: 300 },
+          { type: "droneSaw", row: 4, delay: 380 },
+          { type: "alien", row: 2, delay: 560 }
+        ]
+      ],
+      lava: [[2, 2], [4, 0], [4, 4], [6, 2]]
+    },
+
+    {
+      name: "4-4",
+      title: "Cosmic Toll Booth",
+      desc: "The aliens are charging you for existing in space.",
+      startGlow: 625,
+      background: "milkyway",
+      music: "battle",
+      waves: [
+        [
+          { type: "alienGun", row: 1, delay: 120 },
+          { type: "alienGun", row: 3, delay: 260 }
+        ],
+        [
+          { type: "alien", row: 0, delay: 90 },
+          { type: "alien", row: 2, delay: 210 },
+          { type: "alien", row: 4, delay: 330 },
+          { type: "assasinRover", row: 2, delay: 520 }
+        ],
+        [
+          { type: "alienGod", row: 2, delay: 430 }
+        ],
+        [
+          { type: "droneSaw", row: 0, delay: 100 },
+          { type: "droneSaw", row: 4, delay: 210 },
+          { type: "alienGun", row: 1, delay: 380 },
+          { type: "alienGun", row: 3, delay: 520 }
+        ]
+      ],
+      lava: [[3, 1], [3, 3], [5, 0], [5, 4], [7, 2]]
+    },
+
+    {
+      name: "4-5",
+      title: "Meteor Insurance Scam",
+      desc: "Nobody told you the meteor policy expired.",
+      startGlow: 700,
+      background: "milkyway",
+      music: "world1",
+      waves: [
+        [
+          { type: "mechaDerp", row: 1, delay: 180 },
+          { type: "mechaDerp", row: 3, delay: 360 }
+        ],
+        [
+          { type: "alienGun", row: 0, delay: 140 },
+          { type: "alienGun", row: 4, delay: 280 },
+          { type: "droneSaw", row: 2, delay: 460 }
+        ],
+        [
+          { type: "alienGod", row: 0, delay: 260 },
+          { type: "alienGod", row: 4, delay: 520 }
+        ],
+        [
+          { type: "assasinRover", row: 1, delay: 130 },
+          { type: "assasinRover", row: 3, delay: 260 },
+          { type: "alien", row: 2, delay: 430 },
+          { type: "mechaDerp", row: 2, delay: 650 }
+        ]
+      ],
+      lava: [[2, 0], [2, 4], [4, 1], [4, 3], [6, 2]]
+    },
+
+    {
+      name: "4-6",
+      title: "Starship Parking Violation",
+      desc: "Every ship parked here is angry at you.",
+      startGlow: 750,
+      background: "milkyway",
+      music: "menu",
+      waves: [
+        [
+          { type: "droneSaw", row: 0, delay: 70 },
+          { type: "droneSaw", row: 2, delay: 180 },
+          { type: "droneSaw", row: 4, delay: 290 }
+        ],
+        [
+          { type: "alienGun", row: 1, delay: 120 },
+          { type: "alienGun", row: 3, delay: 240 },
+          { type: "alien", row: 2, delay: 390 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 200 },
+          { type: "mechaDerp", row: 2, delay: 420 },
+          { type: "mechaDerp", row: 4, delay: 640 }
+        ],
+        [
+          { type: "alienGod", row: 1, delay: 330 },
+          { type: "alienGod", row: 3, delay: 620 }
+        ]
+      ],
+      lava: [[1, 2], [3, 0], [3, 4], [5, 1], [5, 3], [7, 2]]
+    },
+        {
+      name: "4-7",
+      title: "The Stars Are Staring",
+      desc: "The background is not just a background anymore.",
+      startGlow: 825,
+      background: "milkyway",
+      music: "desert",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 80 },
+          { type: "alienGun", row: 2, delay: 220 },
+          { type: "alien", row: 4, delay: 360 }
+        ],
+        [
+          { type: "alienGod", row: 2, delay: 360 },
+          { type: "droneSaw", row: 0, delay: 650 },
+          { type: "droneSaw", row: 4, delay: 760 }
+        ],
+        [
+          { type: "alienGun", row: 0, delay: 120 },
+          { type: "alienGun", row: 1, delay: 240 },
+          { type: "alienGun", row: 3, delay: 400 },
+          { type: "alienGun", row: 4, delay: 520 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 220 },
+          { type: "mechaDerp", row: 3, delay: 440 },
+          { type: "alienGod", row: 2, delay: 780 }
+        ]
+      ],
+      lava: [[2, 1], [2, 3], [4, 2], [6, 1], [6, 3], [8, 2]]
+    },
+
+    {
+      name: "4-8",
+      title: "Alien God Reunion",
+      desc: "There are several of them. This was not in the plan.",
+      startGlow: 950,
+      background: "milkyway",
+      music: "battle",
+      waves: [
+        [
+          { type: "alienGod", row: 0, delay: 220 },
+          { type: "alienGod", row: 4, delay: 440 }
+        ],
+        [
+          { type: "droneSaw", row: 1, delay: 90 },
+          { type: "droneSaw", row: 2, delay: 180 },
+          { type: "droneSaw", row: 3, delay: 270 },
+          { type: "alienGun", row: 2, delay: 520 }
+        ],
+        [
+          { type: "alienGod", row: 1, delay: 260 },
+          { type: "alienGod", row: 3, delay: 520 },
+          { type: "assasinRover", row: 0, delay: 760 },
+          { type: "assasinRover", row: 4, delay: 860 }
+        ],
+        [
+          { type: "mechaDerp", row: 0, delay: 170 },
+          { type: "mechaDerp", row: 4, delay: 340 },
+          { type: "alienGun", row: 1, delay: 520 },
+          { type: "alienGun", row: 3, delay: 700 },
+          { type: "alienGod", row: 2, delay: 980 }
+        ]
+      ],
+      lava: [[3, 0], [3, 1], [3, 3], [3, 4], [6, 0], [6, 4]]
+    },
+
+    {
+      name: "4-9",
+      title: "Before The Real Problem",
+      desc: "The universe is spamming warnings and none of them are helpful.",
+      startGlow: 1200,
+      background: "milkyway",
+      music: "world1",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 70 },
+          { type: "alien", row: 1, delay: 140 },
+          { type: "alien", row: 2, delay: 210 },
+          { type: "alien", row: 3, delay: 280 },
+          { type: "alien", row: 4, delay: 350 }
+        ],
+        [
+          { type: "droneSaw", row: 0, delay: 80 },
+          { type: "droneSaw", row: 4, delay: 160 },
+          { type: "assasinRover", row: 1, delay: 300 },
+          { type: "assasinRover", row: 3, delay: 430 },
+          { type: "alienGun", row: 2, delay: 620 }
+        ],
+        [
+          { type: "alienGod", row: 0, delay: 260 },
+          { type: "alienGod", row: 2, delay: 520 },
+          { type: "alienGod", row: 4, delay: 780 }
+        ],
+        [
+          { type: "mechaDerp", row: 1, delay: 150 },
+          { type: "mechaDerp", row: 3, delay: 320 },
+          { type: "alienGun", row: 0, delay: 500 },
+          { type: "alienGun", row: 4, delay: 680 },
+          { type: "droneSaw", row: 2, delay: 860 }
+        ],
+        [
+          { type: "alienFinalBoss", row: 2, delay: 600 },
+          { type: "alienGod", row: 0, delay: 980 },
+          { type: "alienGod", row: 4, delay: 1180 },
+          { type: "assasinRover", row: 1, delay: 1420 },
+          { type: "assasinRover", row: 3, delay: 1540 }
+        ]
+      ],
+      lava: [[2, 0], [2, 4], [4, 1], [4, 3], [5, 2], [7, 0], [7, 4]]
+    },
+
+    {
+      name: "4-10",
+      title: "The Great Derpocolypse",
+      desc: "Look how far you've came. I belive in you.",
+      startGlow: 200,
+      background: "milkyway",
+      music: "finalBoss",
+      waves: [
+        [
+          { type: "droneSaw", row: 2, delay: 50 },
+          { type: "fast", row: 2, delay: 140 },
+          { type: "alienGod", row: 2, delay: 360 },
+          { type: "alien", row: 0, delay: 480 },
+          { type: "alienGod", row: 1, delay: 600 },
+          { type: "alienFinalBoss", row: 4, delay: 720 }
+        ],
+        [
+          { type: "assasinRover", row: 1, delay: 120 },
+          { type: "alienGod", row: 0, delay: 240 },
+          { type: "alienGun", row: 2, delay: 360 },
+          { type: "mechaDerp", row: 3, delay: 480 },
+          { type: "alienFinalBoss", row: 2, delay: 600 },
+          { type: "assasinRover", row: 4, delay: 720 }
+        ],
+        [
+          { type: "alienFinalBoss", row: 0, delay: 120 },
+          { type: "alienFinalBoss", row: 1, delay: 240 },
+          { type: "alienFinalBoss", row: 2, delay: 360 },
+          { type: "alienFinalBoss", row: 3, delay: 480 },
+          { type: "alienFinalBoss", row: 4, delay: 600 },
+          { type: "mechaDerp", row: 2, delay: 720 }
+        ],
+        [
+          { type: "basic", row: 2, delay: 120 },
+          { type: "armored", row: 2, delay: 240 },
+          { type: "fast", row: 2, delay: 360 },
+          { type: "assasinRover", row: 2, delay: 480 },
+          { type: "mechaDerp", row: 2, delay: 600 },
+          { type: "alien", row: 2, delay: 720 },
+          { type: "alienGun", row: 2, delay: 840 },
+          { type: "droneSaw", row: 2, delay: 960 },
+          { type: "alienGod", row: 2, delay: 1080 },
+          { type: "alienFinalBoss", row: 2, delay: 1200 }
+        ],
+        [
+          { type: "alienGun", row: 3, delay: 120 },
+          { type: "alienFinalBoss", row: 2, delay: 240 },
+          { type: "assasinRover", row: 1, delay: 360 },
+          { type: "assasinRover", row: 4, delay: 480 },
+          { type: "droneSaw", row: 0, delay: 600 },
+          { type: "droneSaw", row: 0, delay: 601 }
+        ],
+        [
+          { type: "alienFinalBoss", row: 4, delay: 120 },
+          { type: "alienFinalBoss", row: 3, delay: 240 },
+          { type: "alienFinalBoss", row: 1, delay: 360 },
+          { type: "alienFinalBoss", row: 4, delay: 480 }
+        ],
+        [
+          { type: "assasinRover", row: 2, delay: 120 }
+        ]
+      ],
+      lava: [
+        [7, 1], [6, 0], [6, 2], [7, 3], [6, 4],
+        [5, 1], [5, 3], [5, 4], [5, 2], [6, 3],
+        [6, 1], [5, 0], [7, 0], [7, 2], [7, 4],
+        [8, 0], [8, 1], [8, 2], [8, 3], [8, 4],
+        [3, 0], [3, 2], [3, 4], [4, 3], [4, 1]
+      ]
+    }
   ],
-  "lava": [
-    [
-      7,
-      1
-    ],
-    [
-      6,
-      0
-    ],
-    [
-      6,
-      2
-    ],
-    [
-      7,
-      3
-    ],
-    [
-      6,
-      4
-    ],
-    [
-      5,
-      1
-    ],
-    [
-      5,
-      3
-    ],
-    [
-      5,
-      4
-    ],
-    [
-      5,
-      2
-    ],
-    [
-      6,
-      3
-    ],
-    [
-      6,
-      1
-    ],
-    [
-      5,
-      0
-    ],
-    [
-      7,
-      0
-    ],
-    [
-      7,
-      2
-    ],
-    [
-      7,
-      4
-    ],
-    [
-      8,
-      0
-    ],
-    [
-      8,
-      1
-    ],
-    [
-      8,
-      2
-    ],
-    [
-      8,
-      3
-    ],
-    [
-      8,
-      4
-    ],
-    [
-      3,
-      0
-    ],
-    [
-      3,
-      2
-    ],
-    [
-      3,
-      4
-    ],
-    [
-      4,
-      3
-    ],
-    [
-      4,
-      1
-    ]
+
+  minigames: [
+    {
+      name: "Chessboard Easy",
+      title: "Chess 1: Pawn Problems",
+      desc: "Small chessboard derp test.",
+      startGlow: 300,
+      background: "chess",
+      music: "battle",
+      waves: [
+        [
+          { type: "basic", row: 1, delay: 120 },
+          { type: "basic", row: 3, delay: 260 }
+        ],
+        [
+          { type: "armored", row: 2, delay: 260 }
+        ]
+      ],
+      lava: [[1, 0], [3, 1], [5, 3], [7, 4]]
+    },
+
+    {
+      name: "Chessboard Normal",
+      title: "Chess 2: Rook Ruckus",
+      desc: "More rows, more nonsense.",
+      startGlow: 450,
+      background: "chess",
+      music: "battle",
+      waves: [
+        [
+          { type: "basic", row: 0, delay: 90 },
+          { type: "basic", row: 2, delay: 180 },
+          { type: "basic", row: 4, delay: 270 }
+        ],
+        [
+          { type: "fast", row: 1, delay: 140 },
+          { type: "fast", row: 3, delay: 300 },
+          { type: "armored", row: 2, delay: 480 }
+        ]
+      ],
+      lava: [[2, 0], [2, 2], [2, 4], [6, 1], [6, 3]]
+    },
+        {
+      name: "Chessboard Hard",
+      title: "Chess 3: Illegal Bishop Energy",
+      desc: "Several pieces are illegal now.",
+      startGlow: 475,
+      background: "chess",
+      music: "desert",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 90 },
+          { type: "alien", row: 2, delay: 190 },
+          { type: "alien", row: 4, delay: 290 }
+        ],
+        [
+          { type: "alienGun", row: 1, delay: 160 },
+          { type: "alienGun", row: 3, delay: 320 },
+          { type: "droneSaw", row: 2, delay: 520 }
+        ],
+        [
+          { type: "alienGod", row: 2, delay: 620 },
+          { type: "assasinRover", row: 0, delay: 860 },
+          { type: "assasinRover", row: 4, delay: 940 }
+        ]
+      ],
+      lava: [[1, 0], [3, 0], [5, 0], [7, 0], [0, 2], [2, 2], [4, 2], [6, 2], [8, 2], [1, 4], [3, 4], [5, 4], [7, 4]]
+    },
+
+    {
+      name: "Chessboard Deadly",
+      title: "Chess 4: Checkmate Or Something",
+      desc: "The board is no longer asking politely.",
+      startGlow: 850,
+      background: "chess",
+      music: "finalBoss",
+      waves: [
+        [
+          { type: "alienGun", row: 0, delay: 100 },
+          { type: "alienGun", row: 4, delay: 220 },
+          { type: "droneSaw", row: 2, delay: 340 }
+        ],
+        [
+          { type: "alienGod", row: 1, delay: 360 },
+          { type: "alienGod", row: 3, delay: 620 }
+        ],
+        [
+          { type: "alienFinalBoss", row: 2, delay: 620 },
+          { type: "alienGod", row: 0, delay: 980 },
+          { type: "alienGod", row: 4, delay: 1180 }
+        ]
+      ],
+      lava: [
+        [0, 0], [2, 0], [4, 0], [6, 0], [8, 0],
+        [1, 1], [3, 1], [5, 1], [7, 1],
+        [0, 2], [2, 2], [6, 2], [8, 2],
+        [1, 3], [3, 3], [5, 3], [7, 3],
+        [0, 4], [2, 4], [4, 4], [6, 4], [8, 4]
+      ]
+    },
+
+    {
+      name: "The Scrapped Folder",
+      title: "Unused Background Energy",
+      desc: "A cursed folder full of things that probably should not be loaded.",
+      startGlow: 600,
+      background: "glitchArchive",
+      music: "menu",
+      waves: [
+        [
+          { type: "basic", row: 0, delay: 60 },
+          { type: "fast", row: 1, delay: 130 },
+          { type: "armored", row: 2, delay: 220 },
+          { type: "alien", row: 3, delay: 310 },
+          { type: "droneSaw", row: 4, delay: 400 }
+        ],
+        [
+          { type: "alienGun", row: 0, delay: 200 },
+          { type: "mechaDerp", row: 2, delay: 420 },
+          { type: "alienGun", row: 4, delay: 640 }
+        ]
+      ],
+      lava: [[4, 0], [4, 1], [4, 3], [4, 4]]
+    },
+
+    {
+      name: "Matrix Test Chamber",
+      title: "Pick Your Bullcrap Simulator",
+      desc: "A Matrix grid test chamber for dumb ideas.",
+      startGlow: 777,
+      background: "matrixGrid",
+      music: "finalBoss",
+      waves: [
+        [
+          { type: "alien", row: 0, delay: 80 },
+          { type: "alien", row: 1, delay: 160 },
+          { type: "alien", row: 2, delay: 240 },
+          { type: "alien", row: 3, delay: 320 },
+          { type: "alien", row: 4, delay: 400 }
+        ],
+        [
+          { type: "alienFinalBoss", row: 2, delay: 700 }
+        ]
+      ],
+      lava: []
+    }
   ]
-}
-    
-    ]
 };
+
 // ============================================================
 // 2. GLOBAL STATE + ASSET LOADING
 // ============================================================
@@ -1775,29 +1432,68 @@ let currentMusic = null;
 let audioUnlocked = false;
 let loopId = 0;
 
+let state = null;
+let pendingLoadout = null;
+
 let save = {
   twigs: 0,
   sticks: 0,
   badges: {},
   upgrades: {},
   statUpgrades: {},
-  unlockedPlants: {}
+  unlockedPlants: {},
+  cleared: {},
+  bestMinigames: {}
 };
 
-let state = null;
-
-const images = {};
-const backgrounds = {};
+const directImageCache = {};
 const music = {};
 
-for (const [key, src] of Object.entries(CONFIG.images)) {
-  images[key] = new Image();
-  images[key].src = src;
+function getImageSrc(img) {
+  if (!img) return "";
+  return CONFIG.images?.[img] || CONFIG.backgrounds?.[img] || img;
 }
 
-for (const [key, src] of Object.entries(CONFIG.backgrounds)) {
-  backgrounds[key] = new Image();
-  backgrounds[key].src = src;
+function getGameImage(img) {
+  const src = getImageSrc(img);
+  if (!src) return null;
+
+  if (!directImageCache[src]) {
+    directImageCache[src] = new Image();
+    directImageCache[src].src = src;
+  }
+
+  return directImageCache[src];
+}
+
+function imageReady(img) {
+  return img && img.complete && img.naturalWidth > 0;
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function cellCenter(col, row) {
+  return {
+    x: GRID_X + col * CELL_W + CELL_W / 2,
+    y: GRID_Y + row * CELL_H + CELL_H / 2
+  };
+}
+
+function posToCell(mx, my) {
+  const col = Math.floor((mx - GRID_X) / CELL_W);
+  const row = Math.floor((my - GRID_Y) / CELL_H);
+
+  if (col < 0 || row < 0 || col >= COLS || row >= ROWS) {
+    return null;
+  }
+
+  return { col, row };
 }
 
 for (const [key, src] of Object.entries(CONFIG.audio.tracks)) {
@@ -1811,24 +1507,20 @@ for (const [key, src] of Object.entries(CONFIG.audio.tracks)) {
 function loadSave() {
   try {
     const raw = localStorage.getItem(CONFIG.saveKey);
-    if (!raw) return;
-
-    const parsed = JSON.parse(raw);
-
-    save = {
-      twigs: Number(parsed.twigs || 0),
-      sticks: Number(parsed.sticks || 0),
-      badges: parsed.badges || {},
-      upgrades: parsed.upgrades || {},
-      statUpgrades: parsed.statUpgrades || {},
-      unlockedPlants: parsed.unlockedPlants || {}
-    };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      save = { ...save, ...parsed };
+    }
   } catch (err) {
     console.warn("Save load failed:", err);
   }
+
+  fixSave();
 }
 
 function saveGame() {
+  fixSave();
+
   try {
     localStorage.setItem(CONFIG.saveKey, JSON.stringify(save));
   } catch (err) {
@@ -1836,16 +1528,33 @@ function saveGame() {
   }
 }
 
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+function fixSave() {
+  save.twigs = Number(save.twigs || 0);
+  save.sticks = Number(save.sticks || 0);
+  save.badges = save.badges || {};
+  save.upgrades = save.upgrades || {};
+  save.statUpgrades = save.statUpgrades || {};
+  save.unlockedPlants = save.unlockedPlants || {};
+  save.cleared = save.cleared || {};
+  save.bestMinigames = save.bestMinigames || {};
 
-function imageReady(img) {
-  return img && img.complete && img.naturalWidth > 0;
+  for (const id of Object.keys(CONFIG.plants)) {
+    const plant = CONFIG.plants[id];
+
+    if (!plant.unlockCost && !plant.unlockAt) {
+      save.unlockedPlants[id] = true;
+    }
+  }
+
+  save.unlockedPlants.removeTool = true;
 }
 
 function getSticks() {
   return Number(save.sticks || 0);
+}
+
+function getPlantLevel(id) {
+  return clamp(Number(save.upgrades[id] || 1), 1, CONFIG.upgrades.maxLevel);
 }
 
 function getPlantExtraUpgrades(id) {
@@ -1863,6 +1572,7 @@ function getPlantExtraUpgrades(id) {
 
 function getPlantExtraTotal(id) {
   const extra = getPlantExtraUpgrades(id);
+
   return (
     Number(extra.cooldown || 0) +
     Number(extra.cost || 0) +
@@ -1875,10 +1585,14 @@ function getPlantLevelText(id) {
   return `Lv ${getPlantLevel(id)} +${getPlantExtraTotal(id)}`;
 }
 
+function getUpgradeCost(id) {
+  const level = getPlantLevel(id);
+  return CONFIG.upgrades.baseCost + (level - 1) * CONFIG.upgrades.costPerLevel;
+}
+
 function getStatUpgradeCost(id, stat) {
   const extra = getPlantExtraUpgrades(id);
   const current = Number(extra[stat] || 0);
-
   return 2 + current * 2;
 }
 
@@ -1886,20 +1600,18 @@ function isPlantUnlocked(id) {
   const plant = CONFIG.plants[id];
   if (!plant) return false;
 
-  if (!plant.unlockCost || plant.unlockCost <= 0) {
+  if (id === "removeTool") return true;
+
+  if (!plant.unlockCost && !plant.unlockAt) {
     return true;
   }
 
   return !!save.unlockedPlants[id];
 }
 
-function getPlantLevel(id) {
-  return Math.max(1, Math.min(CONFIG.upgrades.maxLevel, save.upgrades[id] || 1));
-}
-
-function getUpgradeCost(id) {
-  const level = getPlantLevel(id);
-  return CONFIG.upgrades.baseCost + (level - 1) * CONFIG.upgrades.costPerLevel;
+function unlockPlant(id) {
+  save.unlockedPlants[id] = true;
+  saveGame();
 }
 
 function getPlantStats(id) {
@@ -1927,12 +1639,17 @@ function getPlantStats(id) {
     hp:
       (base.hp || 1) +
       bonus * CONFIG.upgrades.hpBoostPerLevel +
-      healthBonus * 20,
+      healthBonus * 22,
 
     projectileDamage:
       (base.projectileDamage || 0) +
       bonus * CONFIG.upgrades.damageBoostPerLevel +
-      powerBonus * 6,
+      powerBonus * 7,
+
+    damage:
+      (base.damage || 0) +
+      bonus * CONFIG.upgrades.damageBoostPerLevel +
+      powerBonus * 9,
 
     produceAmount:
       (base.produceAmount || 0) +
@@ -2004,64 +1721,28 @@ function playSfx(type) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
-    let freq = 300;
-    let duration = 0.08;
-    let wave = "square";
-    let volume = CONFIG.audio.sfxVolume;
+    const data = {
+      plant: [520, 0.06, "triangle"],
+      no: [95, 0.12, "sawtooth"],
+      shoot: [180, 0.035, "square"],
+      hit: [130, 0.055, "sawtooth"],
+      glow: [760, 0.06, "triangle"],
+      boom: [70, 0.22, "sawtooth"],
+      win: [880, 0.12, "triangle"],
+      crit: [980, 0.05, "square"],
+      laser: [420, 0.04, "sawtooth"]
+    }[type] || [300, 0.08, "square"];
 
-    if (type === "plant") {
-      freq = 520;
-      duration = 0.06;
-      wave = "triangle";
-    }
-
-    if (type === "no") {
-      freq = 95;
-      duration = 0.12;
-      wave = "sawtooth";
-    }
-
-    if (type === "shoot") {
-      freq = 180;
-      duration = 0.035;
-      wave = "square";
-    }
-
-    if (type === "hit") {
-      freq = 130;
-      duration = 0.055;
-      wave = "sawtooth";
-    }
-
-    if (type === "glow") {
-      freq = 760;
-      duration = 0.06;
-      wave = "triangle";
-    }
-
-    if (type === "boom") {
-      freq = 70;
-      duration = 0.22;
-      wave = "sawtooth";
-      volume *= 1.8;
-    }
-
-    if (type === "win") {
-      freq = 880;
-      duration = 0.12;
-      wave = "triangle";
-    }
-
-    osc.type = wave;
-    osc.frequency.value = freq;
-    gain.gain.value = volume;
+    osc.type = data[2];
+    osc.frequency.value = data[0];
+    gain.gain.value = CONFIG.audio.sfxVolume * (type === "boom" ? 2 : 1);
 
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
     osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.stop(audioCtx.currentTime + duration);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + data[1]);
+    osc.stop(audioCtx.currentTime + data[1]);
   } catch (err) {}
 }
 
@@ -2070,2304 +1751,1906 @@ function playSfx(type) {
 // ============================================================
 
 function installBaseHTML() {
-  document.body.innerHTML = `
-    <div id="padApp"></div>
-  `;
-
+  document.body.innerHTML = `<div id="padApp"></div>`;
   app = document.getElementById("padApp");
 }
-
 function installStyles() {
-  const old = document.getElementById("padV2Style");
-  if (old) old.remove();
+  document.getElementById("padV25Style")?.remove();
 
   const style = document.createElement("style");
-  style.id = "padV2Style";
+  style.id = "padV25Style";
   style.textContent = `
-    * {
-      box-sizing: border-box;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    html,
-    body {
-      margin: 0;
-      min-height: 100%;
-      background: #071014;
-      color: white;
-      font-family: system-ui, Arial, sans-serif;
-      overflow-x: hidden;
-    }
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #071014;
+  color: white;
+  font-family: system-ui, Arial, sans-serif;
+  overflow-x: hidden;
+}
 
-    button {
-      font-family: inherit;
-    }
+button {
+  font-family: inherit;
+}
 
-    #padApp {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 20% 10%, rgba(80, 220, 255, 0.2), transparent 30%),
-        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08), transparent 25%),
-        linear-gradient(135deg, #030608, #0c181d 55%, #05080a);
-    }
+#padApp {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(80, 220, 255, .2), transparent 30%),
+    linear-gradient(135deg, #030608, #0c181d 55%, #05080a);
+}
 
-    .screen {
-      min-height: 100vh;
-      padding: 24px;
-    }
+.screen {
+  min-height: 100vh;
+  padding: 24px;
+}
 
-    .menu-screen {
-      display: grid;
-      grid-template-columns: 300px minmax(0, 1fr);
-      gap: 28px;
-      align-items: center;
-    }
+.title {
+  font-size: 42px;
+  font-weight: 900;
+  margin: 0 0 8px;
+  text-shadow: 0 0 18px #53e7ff;
+}
 
-    .menu-left {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+.sub {
+  opacity: .8;
+  margin: 0 0 18px;
+}
 
-    .title-card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(160,240,255,0.35);
-      border-radius: 26px;
-      padding: 24px;
-      box-shadow: 0 0 35px rgba(90,220,255,0.18);
-    }
+.panel {
+  background: rgba(0, 0, 0, .45);
+  border: 1px solid rgba(133, 234, 255, .35);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 0 28px rgba(0, 220, 255, .1);
+}
 
-    .title-card h1 {
-      margin: 0;
-      font-size: clamp(34px, 6vw, 76px);
-      line-height: 0.95;
-      color: #f8ff74;
-      text-shadow: 0 0 18px rgba(255,255,80,0.35);
-    }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
 
-    .title-card p {
-      color: #d7faff;
-      font-size: 18px;
-      line-height: 1.45;
-    }
+.menu {
+  display: grid;
+  grid-template-columns: minmax(240px, 330px) 1fr;
+  gap: 22px;
+  align-items: start;
+}
 
-    .bubble-btn {
-      border: 0;
-      border-radius: 999px;
-      padding: 16px 22px;
-      font-size: 19px;
-      font-weight: 900;
-      cursor: pointer;
-      color: #063042;
-      background: linear-gradient(#f8ffff, #7de5ff 48%, #33b4e4);
-      box-shadow:
-        inset 0 2px 0 rgba(255,255,255,0.9),
-        0 0 22px rgba(80,220,255,0.35);
-      transition: transform 0.12s ease, filter 0.12s ease;
-    }
+.btn {
+  border: 1px solid rgba(130, 235, 255, .55);
+  background: rgba(9, 35, 44, .85);
+  color: white;
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 800;
+  box-shadow: 0 0 14px rgba(0, 255, 255, .08);
+}
 
-    .bubble-btn:hover {
-      transform: translateY(-2px) scale(1.02);
-      filter: brightness(1.08);
-    }
+.btn:hover {
+  background: rgba(18, 70, 83, .95);
+  transform: translateY(-1px);
+}
 
-    .danger-btn {
-      background: linear-gradient(#fff6f6, #ff8e8e 48%, #e84c4c);
-      color: #410808;
-    }
+.btn.bad {
+  border-color: #ff7788;
+  background: #351119;
+}
 
-    .panel {
-      background: rgba(0,0,0,0.45);
-      border: 2px solid rgba(255,255,255,0.15);
-      border-radius: 24px;
-      padding: 18px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.25);
-    }
+.btn.good {
+  border-color: #89ff9d;
+  background: #12351c;
+}
 
-    .panel h2 {
-      margin-top: 0;
-      color: #f8ff74;
-    }
+.btn.warn {
+  border-color: #ffd36a;
+  background: #37290f;
+}
 
-    .grid-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 12px;
-    }
+.btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+}
 
-    .tile-btn {
-      border: 3px solid #111;
-      border-radius: 18px;
-      background: #f3f3f3;
-      color: #111;
-      padding: 12px;
-      min-height: 112px;
-      cursor: pointer;
-      text-align: left;
-      font-weight: 800;
-    }
+.stack {
+  display: grid;
+  gap: 10px;
+}
 
-    .tile-btn:hover {
-      outline: 4px solid #f8ff74;
-    }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
 
-    .tile-btn small {
-      display: block;
-      margin-top: 6px;
-      font-weight: 600;
-      color: #333;
-    }
+.card {
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 16px;
+  padding: 12px;
+  min-height: 126px;
+}
 
-    .game-screen {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-    }
+.card.locked {
+  opacity: .65;
+  filter: grayscale(.35);
+}
 
-    .hud {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      padding: 12px 16px;
-      background: rgba(0,0,0,0.7);
-      border: 2px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      font-family: monospace;
-      font-weight: 900;
-      font-size: 16px;
-    }
+.card h3 {
+  margin: 0 0 4px;
+}
 
-    .hud-title {
-      color: #f8ff74;
-      font-size: 24px;
-    }
+.tiny {
+  font-size: 12px;
+  opacity: .72;
+}
 
-    .game-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 900px) 260px;
-      gap: 12px;
-      justify-content: center;
-      align-items: start;
-    }
+.topbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
 
-    .canvas-wrap {
-      background: rgba(0,0,0,0.55);
-      border: 3px solid #111;
-      border-radius: 14px;
-      padding: 6px;
-    }
+.gameWrap {
+  display: grid;
+  justify-content: center;
+  gap: 10px;
+}
 
-    #gameCanvas {
-      width: 100%;
-      max-width: 900px;
-      aspect-ratio: 900 / 520;
-      height: auto;
-      display: block;
-      cursor: pointer;
-      touch-action: manipulation;
-      background: #5fb846;
-    }
+.hud {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 
-    .cards {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 590px;
-      overflow-y: auto;
-      padding-right: 3px;
-    }
+.pill {
+  padding: 8px 11px;
+  background: rgba(0, 0, 0, .45);
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 999px;
+}
 
-    .plant-card {
-      background: #eee;
-      color: #111;
-      border: 3px solid #111;
-      border-radius: 14px;
-      padding: 8px;
-      cursor: pointer;
-      text-align: center;
-      font-weight: 800;
-    }
+canvas {
+  max-width: 100%;
+  background: #123;
+  border: 2px solid rgba(160, 240, 255, .35);
+  border-radius: 18px;
+  box-shadow: 0 0 30px rgba(0, 220, 255, .15);
+  touch-action: none;
+}
 
-    .plant-card.selected {
-      outline: 5px solid #f8ff74;
-    }
+.plantbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-    .plant-card:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
+.plantCard {
+  width: 112px;
+  min-height: 112px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  background: rgba(0, 0, 0, .5);
+  border-radius: 14px;
+  color: white;
+  padding: 7px;
+  cursor: pointer;
+}
 
-    .plant-card img {
-      width: 100%;
-      height: 62px;
-      object-fit: contain;
-      background: white;
-      border-radius: 8px;
-    }
+.plantCard.selected {
+  outline: 3px solid #57f3ff;
+}
 
-    .bottom-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      background: rgba(0,0,0,0.7);
-      border: 2px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      padding: 12px;
-    }
+.plantCard.cool {
+  opacity: .45;
+}
 
-    .message {
-      font-family: monospace;
-      font-weight: 900;
-      color: #fff7b0;
-    }
+.plantCard .name {
+  font-size: 12px;
+  font-weight: 900;
+}
 
-    .meet-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 14px;
-    }
+.plantCard .cost {
+  font-size: 12px;
+  color: #ffe899;
+}
 
-    .meet-card {
-      background: #f0f0f0;
-      color: #111;
-      border: 4px solid #111;
-      border-radius: 18px;
-      padding: 12px;
-      min-height: 230px;
-    }
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
 
-    .meet-card img {
-      width: 100%;
-      height: 95px;
-      object-fit: contain;
-      background: white;
-      border-radius: 10px;
-    }
+.notice {
+  position: fixed;
+  left: 50%;
+  top: 22px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, .82);
+  border: 1px solid #6ff;
+  border-radius: 14px;
+  padding: 12px 16px;
+  z-index: 5;
+  box-shadow: 0 0 20px rgba(0, 255, 255, .2);
+}
 
-    .meet-card h3 {
-      margin: 8px 0 4px;
-    }
+@media (max-width: 760px) {
+  .menu {
+    grid-template-columns: 1fr;
+  }
 
-    .meet-card p {
-      font-size: 13px;
-      line-height: 1.35;
-    }
+  .screen {
+    padding: 14px;
+  }
 
-    @media (max-width: 900px) {
-      .screen {
-        padding: 12px;
-      }
+  .title {
+    font-size: 32px;
+  }
 
-      .menu-screen {
-        grid-template-columns: 1fr;
-      }
-
-      .menu-left {
-        order: 2;
-      }
-
-      .game-layout {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .cards {
-        flex-direction: row;
-        overflow-x: auto;
-        overflow-y: hidden;
-        max-height: none;
-      }
-
-      .plant-card {
-        flex: 0 0 128px;
-        font-size: 12px;
-      }
-
-      .plant-card img {
-        height: 50px;
-      }
-
-      .hud-title {
-        font-size: 18px;
-      }
-    }
-  `;
+  .plantCard {
+    width: 96px;
+  }
+}
+`;
 
   document.head.appendChild(style);
 }
 
-function setScreen(name, html) {
-  currentScreen = name;
-  loopId++;
-
-  app.innerHTML = `<main class="screen ${name}-screen">${html}</main>`;
-
-  if (name !== "game") {
-    state = null;
-  }
-
-  if (name === "menu") {
-    playMusic(CONFIG.audio.menuTrack);
-  }
+function setScreen(html) {
+  app.innerHTML = html;
 }
 
-function menuButton(text, action, extraClass = "") {
-  const btn = document.createElement("button");
-  btn.className = `bubble-btn ${extraClass}`;
-  btn.textContent = text;
-  btn.addEventListener("click", () => {
-    unlockAudio();
-    action();
-  });
-  return btn;
+function toast(msg) {
+  const el = document.createElement("div");
+  el.className = "notice";
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
 }
 
-// ============================================================
-// 4. MENUS
-// ============================================================
+function currencyHtml() {
+  return `
+    <span class="pill">Twigs: <b>${save.twigs}</b></span>
+    <span class="pill">Sticks: <b>${save.sticks}</b></span>
+  `;
+}
+
+function imgTag(id, size = 48) {
+  const src = getImageSrc(id);
+
+  return `
+    <img
+      src="${src}"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"
+      style="width:${size}px;height:${size}px;object-fit:contain;image-rendering:auto"
+    >
+    <span
+      style="display:none;width:${size}px;height:${size}px;background:#ff4bd8;color:#111;place-items:center;font-weight:900;border-radius:8px"
+    >?</span>
+  `;
+}
 
 function showMenu() {
-  setScreen("menu", `
-    <section class="menu-left" id="menuButtons"></section>
+  currentScreen = "menu";
+  state = null;
+  playMusic(CONFIG.audio.menuTrack);
 
-    <section class="title-card">
-      <h1>${CONFIG.gameTitle}</h1>
-      <p>
-        A very serious game about plants, derps, Twigs, questionable strategy,
-        and whatever else gets added later.
-      </p>
-      <p>
-        v2 UI remake: cleaner screens, cleaner input, less cursed overlay nonsense.
-      </p>
-    </section>
+  setScreen(`
+    <div class="screen menu">
+      <div class="panel">
+        <h1 class="title">${CONFIG.gameTitle}</h1>
+        <p class="sub">Bullcrap Replacement Edition</p>
+
+        <div class="stack">
+          <button class="btn good" onclick="showLevelSelect()">Play Story</button>
+          <button class="btn" onclick="showMinigames()">Minigames</button>
+          <button class="btn" onclick="showUpgrades()">Upgrade Plants</button>
+          <button class="btn" onclick="showShop()">Twig Shop</button>
+          <button class="btn" onclick="showAlmanac()">Meet Da Whatever</button>
+          <button class="btn" onclick="showCustomLevels()">Custom Levels</button>
+          <button class="btn" onclick="window.open('mod/','_self')">Open PAD Modder</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="topbar">${currencyHtml()}</div>
+        <h2>New stuff in this build</h2>
+        <p>
+          Unlocks are repaired, plants can use direct asset paths,
+          missing images turn into pink squares, and levels now ask you
+          to pick up to 5 plants first.
+        </p>
+        <p>
+          There are also critical hits, alien gunner shots, enemy size hitboxes,
+          speed controls, Beach Ball launching, and the chess minigame is now
+          4 levels from easy to deadly.
+        </p>
+      </div>
+    </div>
   `);
+}
 
-  const menuButtons = document.getElementById("menuButtons");
-
-  menuButtons.appendChild(menuButton("Play Story", () => startLevel(0, "levels")));
-menuButtons.appendChild(menuButton("Level Selectr", showLevelSelect));
-menuButtons.appendChild(menuButton("Custom Levels", showCustomLevels));
-menuButtons.appendChild(menuButton("PAD Modder", () => {
-  window.location.href = "./mod/";
-}));
-menuButtons.appendChild(menuButton("Minigames", showMinigames));
-menuButtons.appendChild(menuButton("Twig Shop", showShop));
-menuButtons.appendChild(menuButton("Upgrade Plants", showUpgrades));
-menuButtons.appendChild(menuButton("Meet Da Whatever", showMeetDaWhatever));
+function isLevelUnlocked(i) {
+  return i === 0 || !!save.cleared[CONFIG.levels[i - 1]?.name];
 }
 
 function showLevelSelect() {
-  setScreen("level", `
-    <section class="panel">
-      <h2>Level Selectr</h2>
-      <p>Choose a story level. Yes, selectr is spelled like that now.</p>
-      <div class="grid-list" id="levelGrid"></div>
-      <br>
-      <button class="bubble-btn" id="backBtn">Back</button>
-    </section>
-  `);
+  currentScreen = "levels";
+  playMusic(CONFIG.audio.menuTrack);
 
-  const grid = document.getElementById("levelGrid");
+  const cards = CONFIG.levels.map((lv, i) => {
+    const unlocked = isLevelUnlocked(i);
+    const clear = save.cleared[lv.name] ? "✅ Cleared" : "";
 
-  CONFIG.levels.forEach((level, index) => {
-    const btn = document.createElement("button");
-    btn.className = "tile-btn";
-    btn.innerHTML = `
-      ${level.name}: ${level.title}
-      <small>${level.desc}</small>
+    return `
+      <div class="card ${unlocked ? "" : "locked"}">
+        <h3>${lv.name} ${lv.title || ""}</h3>
+        <p class="tiny">${lv.desc || ""}</p>
+        <p class="tiny">${clear}</p>
+        <button
+          class="btn good"
+          ${unlocked ? "" : "disabled"}
+          onclick="showLoadoutPicker(${i},'levels')"
+        >
+          ${unlocked ? "Pick Your Bullcrap" : "Locked"}
+        </button>
+      </div>
     `;
-    btn.addEventListener("click", () => startLevel(index, "levels"));
-    grid.appendChild(btn);
-  });
+  }).join("");
 
-  document.getElementById("backBtn").onclick = showMenu;
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="showMenu()">← Menu</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Level Selectr</h1>
+      <div class="cards">${cards}</div>
+    </div>
+  `);
 }
 
-const CUSTOM_LEVEL_KEY = "pad_custom_levels_v1";
+function showMinigames() {
+  currentScreen = "minigames";
 
-function loadCustomLevels() {
+  const cards = MINIGAMES.map((lv, i) => `
+    <div class="card">
+      <h3>${lv.name} ${lv.title}</h3>
+      <p class="tiny">${lv.desc}</p>
+      <p class="tiny">Best: ${save.bestMinigames[lv.name] ? "✅ Won" : "—"}</p>
+      <button class="btn good" onclick="showLoadoutPicker(${i},'minigames')">
+        Pick Your Bullcrap
+      </button>
+    </div>
+  `).join("");
+
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="showMenu()">← Menu</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Minigames</h1>
+      <div class="cards">${cards}</div>
+    </div>
+  `);
+}
+
+function getLevelList(name) {
+  if (name === "minigames") return MINIGAMES;
+  if (name === "custom") return getCustomLevels();
+  return CONFIG.levels;
+}
+function showLoadoutPicker(index, listName) {
+  currentScreen = "loadout";
+
+  const level = getLevelList(listName)[index];
+
+  let selected = (
+    JSON.parse(localStorage.getItem("pad_v25_last_loadout") || "null") ||
+    CONFIG.defaultLoadout
+  )
+    .filter(isPlantUnlocked)
+    .filter(id => id !== "removeTool")
+    .slice(0, CONFIG.gameplay.maxLoadoutPlants);
+
+  if (selected.length === 0) {
+    selected = ["campfr", "treeGun"].filter(isPlantUnlocked);
+  }
+
+  pendingLoadout = {
+    index,
+    listName,
+    selected
+  };
+
+  renderLoadoutPicker();
+}
+
+function renderLoadoutPicker() {
+  const { index, listName, selected } = pendingLoadout;
+  const level = getLevelList(listName)[index];
+
+  const plantCards = Object.keys(CONFIG.plants)
+    .filter(id => id !== "removeTool")
+    .map(id => {
+      const p = CONFIG.plants[id];
+      const unlocked = isPlantUnlocked(id);
+      const on = selected.includes(id);
+
+      return `
+        <div class="card ${unlocked ? "" : "locked"}">
+          <div class="row">
+            ${imgTag(p.img, 46)}
+            <div>
+              <h3>${p.name}</h3>
+              <div class="tiny">${p.role} • ${getPlantLevelText(id)}</div>
+            </div>
+          </div>
+
+          <p class="tiny">${p.desc}</p>
+
+          <button
+            class="btn ${on ? "bad" : "good"}"
+            ${unlocked ? "" : "disabled"}
+            onclick="toggleLoadout('${id}')"
+          >
+            ${unlocked ? (on ? "Remove" : "Add") : "Locked"}
+          </button>
+        </div>
+      `;
+    })
+    .join("");
+
+  const backAction =
+    listName === "levels"
+      ? "showLevelSelect()"
+      : listName === "minigames"
+        ? "showMinigames()"
+        : "showCustomLevels()";
+
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="${backAction}">← Back</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Pick Your Bullcrap</h1>
+      <p class="sub">
+        ${level.name}: ${level.title || ""} —
+        choose up to ${CONFIG.gameplay.maxLoadoutPlants} plants.
+        Remove Tool is always included.
+      </p>
+
+      <div class="panel">
+        <b>Selected:</b>
+        ${selected.map(id => CONFIG.plants[id]?.name || id).join(", ") || "None"}
+        <br><br>
+
+        <button
+          class="btn good"
+          ${selected.length ? "" : "disabled"}
+          onclick="startPickedLevel()"
+        >
+          Start Level
+        </button>
+      </div>
+
+      <br>
+      <div class="cards">${plantCards}</div>
+    </div>
+  `);
+}
+
+function toggleLoadout(id) {
+  const selected = pendingLoadout.selected;
+
+  if (selected.includes(id)) {
+    pendingLoadout.selected = selected.filter(x => x !== id);
+  } else {
+    if (selected.length >= CONFIG.gameplay.maxLoadoutPlants) {
+      toast("Only 5 plants. The bullcrap limit has spoken.");
+      return;
+    }
+
+    selected.push(id);
+  }
+
+  renderLoadoutPicker();
+}
+
+function startPickedLevel() {
+  localStorage.setItem(
+    "pad_v25_last_loadout",
+    JSON.stringify(pendingLoadout.selected)
+  );
+
+  startLevel(
+    pendingLoadout.index,
+    pendingLoadout.listName,
+    pendingLoadout.selected
+  );
+}
+
+function showShop() {
+  currentScreen = "shop";
+
+  const badges = Object.entries(CONFIG.shopBadges).map(([id, b]) => `
+    <div class="card">
+      <h3>${b.name}</h3>
+      <p class="tiny">${b.desc}</p>
+      <button
+        class="btn"
+        ${save.badges[id] ? "disabled" : ""}
+        onclick="buyBadge('${id}')"
+      >
+        ${save.badges[id] ? "Owned" : `Buy ${b.cost} Twigs`}
+      </button>
+    </div>
+  `).join("");
+
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="showMenu()">← Menu</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Twig Shop</h1>
+
+      <div class="panel row">
+        <button class="btn good" onclick="tradeSticks()">
+          Trade 5 Twigs → 3 Sticks
+        </button>
+      </div>
+
+      <br>
+      <div class="cards">${badges}</div>
+    </div>
+  `);
+}
+
+function tradeSticks() {
+  if (save.twigs < 5) {
+    toast("Not enough Twigs.");
+    return;
+  }
+
+  save.twigs -= 5;
+  save.sticks += 3;
+  saveGame();
+  showShop();
+}
+
+function buyBadge(id) {
+  const badge = CONFIG.shopBadges[id];
+
+  if (!badge || save.badges[id] || save.twigs < badge.cost) return;
+
+  save.twigs -= badge.cost;
+  save.badges[id] = true;
+  saveGame();
+  showShop();
+}
+
+function showUpgrades() {
+  currentScreen = "upgrades";
+
+  const cards = Object.entries(CONFIG.plants)
+    .filter(([id]) => id !== "removeTool")
+    .map(([id, p]) => {
+      const unlocked = isPlantUnlocked(id);
+      const level = getPlantLevel(id);
+      const extra = getPlantExtraUpgrades(id);
+
+      let unlockTxt = "";
+
+      if (!unlocked) {
+        if (p.unlockCost) {
+          unlockTxt = `
+            <button class="btn good" onclick="buyPlantUnlock('${id}')">
+              Unlock for ${p.unlockCost} Sticks
+            </button>
+          `;
+        } else {
+          unlockTxt = `
+            <button class="btn" disabled>
+              Unlocks after ${p.unlockAt}
+            </button>
+          `;
+        }
+      }
+
+      return `
+        <div class="card ${unlocked ? "" : "locked"}">
+          <div class="row">
+            ${imgTag(p.img, 48)}
+            <div>
+              <h3>${p.name}</h3>
+              <div class="tiny">${p.role} • ${getPlantLevelText(id)}</div>
+            </div>
+          </div>
+
+          <p class="tiny">${p.desc}</p>
+          ${unlockTxt}
+
+          <div class="stack">
+            <button
+              class="btn"
+              ${!unlocked || level >= CONFIG.upgrades.maxLevel ? "disabled" : ""}
+              onclick="buyMainUpgrade('${id}')"
+            >
+              Main Level:
+              ${level >= CONFIG.upgrades.maxLevel ? "MAX" : getUpgradeCost(id) + " Twigs"}
+            </button>
+
+            <button
+              class="btn"
+              ${!unlocked ? "disabled" : ""}
+              onclick="buyStatUpgrade('${id}', 'cooldown')"
+            >
+              Cooldown + (${extra.cooldown}) -
+              ${getStatUpgradeCost(id, "cooldown")} Sticks
+            </button>
+
+            <button
+              class="btn"
+              ${!unlocked ? "disabled" : ""}
+              onclick="buyStatUpgrade('${id}', 'cost')"
+            >
+              Cost + (${extra.cost}) -
+              ${getStatUpgradeCost(id, "cost")} Sticks
+            </button>
+
+            <button
+              class="btn"
+              ${!unlocked ? "disabled" : ""}
+              onclick="buyStatUpgrade('${id}', 'health')"
+            >
+              Health + (${extra.health}) -
+              ${getStatUpgradeCost(id, "health")} Sticks
+            </button>
+
+            <button
+              class="btn"
+              ${!unlocked ? "disabled" : ""}
+              onclick="buyStatUpgrade('${id}', 'power')"
+            >
+              Power + (${extra.power}) -
+              ${getStatUpgradeCost(id, "power")} Sticks
+            </button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="showMenu()">← Menu</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Upgrade Plants</h1>
+      <div class="cards">${cards}</div>
+    </div>
+  `);
+}
+
+function buyPlantUnlock(id) {
+  const plant = CONFIG.plants[id];
+
+  if (!plant?.unlockCost || save.sticks < plant.unlockCost) {
+    toast("Need more Sticks.");
+    return;
+  }
+
+  save.sticks -= plant.unlockCost;
+  unlockPlant(id);
+  showUpgrades();
+}
+
+function buyMainUpgrade(id) {
+  const cost = getUpgradeCost(id);
+
+  if (save.twigs < cost) {
+    toast("Need more Twigs.");
+    return;
+  }
+
+  if (getPlantLevel(id) >= CONFIG.upgrades.maxLevel) return;
+
+  save.twigs -= cost;
+  save.upgrades[id] = getPlantLevel(id) + 1;
+  saveGame();
+  showUpgrades();
+}
+
+function buyStatUpgrade(id, stat) {
+  const cost = getStatUpgradeCost(id, stat);
+
+  if (save.sticks < cost) {
+    toast("Need more Sticks.");
+    return;
+  }
+
+  const extra = getPlantExtraUpgrades(id);
+
+  save.sticks -= cost;
+  extra[stat] = Number(extra[stat] || 0) + 1;
+
+  saveGame();
+  showUpgrades();
+}
+function showAlmanac() {
+  const plantHtml = Object.entries(CONFIG.plants)
+    .map(([id, p]) => `
+      <div class="card ${isPlantUnlocked(id) ? "" : "locked"}">
+        <div class="row">
+          ${imgTag(p.img, 50)}
+          <div>
+            <h3>${p.name}</h3>
+            <span class="tiny">
+              ${p.role || "Plant"} • ${isPlantUnlocked(id) ? "Unlocked" : "Locked"}
+            </span>
+          </div>
+        </div>
+
+        <p class="tiny">${p.desc || ""}</p>
+      </div>
+    `)
+    .join("");
+
+  const enemyHtml = Object.entries(CONFIG.enemies)
+    .map(([id, e]) => `
+      <div class="card">
+        <div class="row">
+          ${imgTag(e.img, 50)}
+          <div>
+            <h3>${e.name}</h3>
+            <span class="tiny">
+              HP ${e.hp} • Size ${e.size || 1}x ${e.rangedShooter ? "• Gunner" : ""}
+            </span>
+          </div>
+        </div>
+
+        <p class="tiny">${e.desc || ""}</p>
+      </div>
+    `)
+    .join("");
+
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="showMenu()">← Menu</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Meet Da Whatever</h1>
+
+      <h2>Plants</h2>
+      <div class="cards">${plantHtml}</div>
+
+      <h2>Enemies</h2>
+      <div class="cards">${enemyHtml}</div>
+    </div>
+  `);
+}
+
+function getCustomLevels() {
   try {
-    const raw = localStorage.getItem(CUSTOM_LEVEL_KEY);
-    const levels = JSON.parse(raw || "[]");
-    return Array.isArray(levels) ? levels : [];
+    return JSON.parse(localStorage.getItem("pad_custom_levels_v1") || "[]");
   } catch (err) {
-    console.warn("Could not load custom levels:", err);
     return [];
   }
 }
 
-function saveCustomLevels(levels) {
-  localStorage.setItem(CUSTOM_LEVEL_KEY, JSON.stringify(levels));
-}
-
-function encodeLevel(level) {
-  return btoa(unescape(encodeURIComponent(JSON.stringify(level))));
-}
-
-function decodeLevel(code) {
-  return JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
-}
-
-function cleanImportedLevel(level) {
-  const safe = {
-    name: String(level.name || "Custom").slice(0, 24),
-    title: String(level.title || "Imported Level").slice(0, 50),
-    desc: String(level.desc || "Imported custom level.").slice(0, 120),
-    startGlow: Math.max(0, Math.min(5000, Number(level.startGlow) || 200)),
-    background: CONFIG.backgrounds[level.background] ? level.background : "forest",
-    music: CONFIG.audio.tracks[level.music] ? level.music : "battle",
-    waves: Array.isArray(level.waves) ? level.waves.slice(0, 5) : [[]],
-    lava: Array.isArray(level.lava) ? level.lava : []
-  };
-
-  safe.lava = safe.lava
-    .filter(pair => Array.isArray(pair) && pair.length >= 2)
-    .map(pair => [
-      Math.max(0, Math.min(8, Number(pair[0]) || 0)),
-      Math.max(0, Math.min(4, Number(pair[1]) || 0))
-    ]);
-
-  safe.waves = safe.waves.map(wave => {
-    if (!Array.isArray(wave)) return [];
-
-    return wave.slice(0, 12).map(enemy => {
-      const type = CONFIG.enemies[enemy.type] ? enemy.type : "basic";
-
-      return {
-        type,
-        row: Math.max(0, Math.min(4, Number(enemy.row) || 0)),
-        delay: Math.max(30, Math.min(1200, Number(enemy.delay) || 120))
-      };
-    });
-  });
-
-  if (safe.waves.length <= 0) {
-    safe.waves = [[{ type: "basic", row: 2, delay: 120 }]];
-  }
-
-  return safe;
+function saveCustomLevels(list) {
+  localStorage.setItem("pad_custom_levels_v1", JSON.stringify(list));
 }
 
 function showCustomLevels() {
-  const customLevels = loadCustomLevels();
+  currentScreen = "custom";
 
-  setScreen("custom", `
-    <section class="panel">
-      <h2>Custom Levels</h2>
-      <p>Import share codes from PAD Modder, save them here, and play them.</p>
+  const list = getCustomLevels();
 
-      <div class="form-grid">
-        <label class="wide">
+  const cards = list.map((lv, i) => `
+    <div class="card">
+      <h3>${lv.name || "Custom"} ${lv.title || ""}</h3>
+      <p class="tiny">${lv.desc || ""}</p>
+
+      <button class="btn good" onclick="showLoadoutPicker(${i}, 'custom')">
+        Pick Your Bullcrap
+      </button>
+
+      <button class="btn bad" onclick="deleteCustom(${i})">
+        Delete
+      </button>
+    </div>
+  `).join("") || `
+    <div class="card">
+      No custom levels yet. Paste a share code below.
+    </div>
+  `;
+
+  setScreen(`
+    <div class="screen">
+      <div class="topbar">
+        <button class="btn" onclick="showMenu()">← Menu</button>
+        ${currencyHtml()}
+      </div>
+
+      <h1 class="title">Custom Levels</h1>
+
+      <div class="panel">
+        <textarea
+          id="shareCode"
+          style="width:100%;height:90px;border-radius:12px;background:#081116;color:white"
+          placeholder="Paste PAD Modder share code here..."
+        ></textarea>
+
+        <br><br>
+
+        <button class="btn good" onclick="importCustomLevel()">
           Import Share Code
-          <textarea id="customImportBox" placeholder="Paste PAD Modder share code here..."></textarea>
-        </label>
+        </button>
       </div>
 
       <br>
 
-      <button class="bubble-btn" id="importCustomBtn">Import Level</button>
-      <button class="bubble-btn" id="openModderBtn">Open PAD Modder</button>
-
-      <br><br>
-
-      <h2>Saved Custom Levels</h2>
-      <div class="grid-list" id="customGrid"></div>
-
-      <br>
-      <button class="bubble-btn" id="backBtn">Back</button>
-    </section>
+      <div class="cards">${cards}</div>
+    </div>
   `);
+}
 
-  const grid = document.getElementById("customGrid");
+function importCustomLevel() {
+  const val = document.getElementById("shareCode").value.trim();
+  if (!val) return;
 
-  if (customLevels.length === 0) {
-    grid.innerHTML = `
-      <p class="hint">No custom levels imported yet. Make one in PAD Modder, export it, then paste the code here.</p>
-    `;
-  } else {
-    customLevels.forEach((level, index) => {
-      const btn = document.createElement("button");
-      btn.className = "tile-btn";
-      btn.innerHTML = `
-        ${level.name}: ${level.title}
-        <small>${level.desc}</small>
-        <small>Background: ${level.background} | Waves: ${level.waves.length}</small>
-      `;
-
-      btn.addEventListener("click", () => {
-        startCustomLevel(level, index, "custom");
-      });
-
-      grid.appendChild(btn);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "tile-btn";
-      deleteBtn.innerHTML = `
-        Delete ${level.name}
-        <small>Removes this custom level from your browser.</small>
-      `;
-
-      deleteBtn.addEventListener("click", () => {
-        if (!confirm(`Delete ${level.name}?`)) return;
-
-        const levels = loadCustomLevels();
-        levels.splice(index, 1);
-        saveCustomLevels(levels);
-        showCustomLevels();
-      });
-
-      grid.appendChild(deleteBtn);
-    });
-  }
-
-  document.getElementById("importCustomBtn").onclick = () => {
-    const box = document.getElementById("customImportBox");
-    const code = box.value.trim();
-
-    if (!code) {
-      alert("Paste a share code first.");
-      return;
-    }
+  try {
+    let obj;
 
     try {
-      const imported = cleanImportedLevel(decodeLevel(code));
-      const levels = loadCustomLevels();
-
-      levels.push(imported);
-      saveCustomLevels(levels);
-
-      alert(`Imported: ${imported.title}`);
-      showCustomLevels();
+      obj = JSON.parse(val);
     } catch (err) {
-      console.warn("Import failed:", err);
-      alert("Import failed. The share code might be broken.");
-    }
-  };
-
-  document.getElementById("openModderBtn").onclick = () => {
-    window.location.href = "./mod/";
-  };
-
-  document.getElementById("backBtn").onclick = showMenu;
-}
-
-function showMinigames() {
-  const minigames = [
-    {
-      name: "M-1",
-      title: "Best Use Is Boom",
-      desc: "Lots of bosses. Kaboom is probably the answer.",
-      startGlow: 5000,
-      background: "milkyway",
-      music: "battle",
-      waves: [
-        [
-          { type: "armored", row: 0, delay: 80 },
-          { type: "armored", row: 2, delay: 160 },
-          { type: "armored", row: 4, delay: 240 }
-        ],
-        [
-          { type: "mechaDerp", row: 1, delay: 160 },
-          { type: "mechaDerp", row: 3, delay: 360 }
-        ],
-        [
-          { type: "mechaDerp", row: 0, delay: 140 },
-          { type: "mechaDerp", row: 2, delay: 300 },
-          { type: "mechaDerp", row: 4, delay: 460 }
-        ]
-      ],
-      lava: []
-    },
-
-    {
-      name: "M-2",
-      title: "Chess Problem",
-      desc: "The derps learned board games. Bad sign.",
-      startGlow: 300,
-      background: "chess",
-      music: "battle",
-      waves: [
-        [
-          { type: "basic", row: 0, delay: 100 },
-          { type: "basic", row: 2, delay: 180 },
-          { type: "basic", row: 4, delay: 260 }
-        ],
-        [
-          { type: "assasinRover", row: 1, delay: 140 },
-          { type: "assasinRover", row: 3, delay: 320 },
-          { type: "armored", row: 2, delay: 520 }
-        ],
-        [{ type: "mechaDerp", row: 2, delay: 260 }]
-      ],
-      lava: [[4, 2]]
-    },
-
-    {
-      name: "M-3",
-      title: "The Floor Is Kinda Lava",
-      desc: "Only the far left is usable. Good luck.",
-      startGlow: 250,
-      background: "cloud",
-      music: "battle",
-      waves: [
-        [
-          { type: "basic", row: 0, delay: 80 },
-          { type: "basic", row: 1, delay: 160 },
-          { type: "basic", row: 2, delay: 240 },
-          { type: "basic", row: 3, delay: 320 },
-          { type: "basic", row: 4, delay: 400 }
-        ],
-        [
-          { type: "fast", row: 1, delay: 100 },
-          { type: "fast", row: 3, delay: 220 },
-          { type: "armored", row: 2, delay: 420 }
-        ]
-      ],
-      lava: [
-        [2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],
-        [2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],
-        [2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],
-        [2,3],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3],
-        [2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4]
-      ]
-    },
-
-    {
-  "name": "1L-1",
-  "title": "One Lane - Easy",
-  "desc": "Play with a lane.",
-  "startGlow": 100,
-  "background": "forest",
-  "music": "world1",
-  "waves": [
-    [
-      {
-        "type": "basic",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "basic",
-        "row": 2,
-        "delay": 240
-      }
-    ],
-    [
-      {
-        "type": "fast",
-        "row": 2,
-        "delay": 120
-      }
-    ]
-  ],
-  "lava": [
-    [
-      0,
-      1
-    ],
-    [
-      1,
-      1
-    ],
-    [
-      3,
-      1
-    ],
-    [
-      4,
-      1
-    ],
-    [
-      5,
-      1
-    ],
-    [
-      6,
-      1
-    ],
-    [
-      7,
-      1
-    ],
-    [
-      8,
-      1
-    ],
-    [
-      7,
-      0
-    ],
-    [
-      6,
-      0
-    ],
-    [
-      5,
-      0
-    ],
-    [
-      4,
-      0
-    ],
-    [
-      3,
-      0
-    ],
-    [
-      2,
-      0
-    ],
-    [
-      1,
-      0
-    ],
-    [
-      2,
-      1
-    ],
-    [
-      0,
-      0
-    ],
-    [
-      8,
-      0
-    ],
-    [
-      8,
-      3
-    ],
-    [
-      7,
-      3
-    ],
-    [
-      6,
-      3
-    ],
-    [
-      5,
-      3
-    ],
-    [
-      4,
-      3
-    ],
-    [
-      3,
-      3
-    ],
-    [
-      2,
-      3
-    ],
-    [
-      1,
-      3
-    ],
-    [
-      0,
-      3
-    ],
-    [
-      0,
-      4
-    ],
-    [
-      1,
-      4
-    ],
-    [
-      2,
-      4
-    ],
-    [
-      3,
-      4
-    ],
-    [
-      4,
-      4
-    ],
-    [
-      5,
-      4
-    ],
-    [
-      6,
-      4
-    ],
-    [
-      7,
-      4
-    ],
-    [
-      8,
-      4
-    ]
-  ]
-},
-
-    {
-  "name": "1L-2",
-  "title": "One Lane - Normal",
-  "desc": "Play with a lane.",
-  "startGlow": 100,
-  "background": "forest",
-  "music": "world1",
-  "waves": [
-    [
-      {
-        "type": "fast",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "basic",
-        "row": 2,
-        "delay": 240
-      }
-    ],
-    [
-      {
-        "type": "fast",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 240
-      }
-    ],
-    [
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 240
-      }
-    ]
-  ],
-  "lava": [
-    [
-      0,
-      1
-    ],
-    [
-      1,
-      1
-    ],
-    [
-      3,
-      1
-    ],
-    [
-      4,
-      1
-    ],
-    [
-      5,
-      1
-    ],
-    [
-      6,
-      1
-    ],
-    [
-      7,
-      1
-    ],
-    [
-      8,
-      1
-    ],
-    [
-      7,
-      0
-    ],
-    [
-      6,
-      0
-    ],
-    [
-      5,
-      0
-    ],
-    [
-      4,
-      0
-    ],
-    [
-      3,
-      0
-    ],
-    [
-      2,
-      0
-    ],
-    [
-      1,
-      0
-    ],
-    [
-      2,
-      1
-    ],
-    [
-      0,
-      0
-    ],
-    [
-      8,
-      0
-    ],
-    [
-      8,
-      3
-    ],
-    [
-      7,
-      3
-    ],
-    [
-      6,
-      3
-    ],
-    [
-      5,
-      3
-    ],
-    [
-      4,
-      3
-    ],
-    [
-      3,
-      3
-    ],
-    [
-      2,
-      3
-    ],
-    [
-      1,
-      3
-    ],
-    [
-      0,
-      3
-    ],
-    [
-      0,
-      4
-    ],
-    [
-      1,
-      4
-    ],
-    [
-      2,
-      4
-    ],
-    [
-      3,
-      4
-    ],
-    [
-      4,
-      4
-    ],
-    [
-      5,
-      4
-    ],
-    [
-      6,
-      4
-    ],
-    [
-      7,
-      4
-    ],
-    [
-      8,
-      4
-    ]
-  ]
-},
-
-    {
-  "name": "1L-3",
-  "title": "One Lane - Deadly",
-  "desc": "Play with a lane.",
-  "startGlow": 100,
-  "background": "forest",
-  "music": "world1",
-  "waves": [
-    [
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 240
-      }
-    ],
-    [
-      {
-        "type": "assasinRover",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 240
-      }
-    ],
-    [
-      {
-        "type": "mechaDerp",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "mechaDerp",
-        "row": 2,
-        "delay": 240
-      },
-      {
-        "type": "assasinRover",
-        "row": 2,
-        "delay": 360
-      }
-    ],
-    [
-      {
-        "type": "assasinRover",
-        "row": 2,
-        "delay": 120
-      },
-      {
-        "type": "mechaDerp",
-        "row": 2,
-        "delay": 240
-      },
-      {
-        "type": "fast",
-        "row": 2,
-        "delay": 360
-      },
-      {
-        "type": "armored",
-        "row": 2,
-        "delay": 480
-      },
-      {
-        "type": "assasinRover",
-        "row": 2,
-        "delay": 600
-      }
-    ]
-  ],
-  "lava": [
-    [
-      0,
-      1
-    ],
-    [
-      1,
-      1
-    ],
-    [
-      3,
-      1
-    ],
-    [
-      4,
-      1
-    ],
-    [
-      5,
-      1
-    ],
-    [
-      6,
-      1
-    ],
-    [
-      7,
-      1
-    ],
-    [
-      8,
-      1
-    ],
-    [
-      7,
-      0
-    ],
-    [
-      6,
-      0
-    ],
-    [
-      5,
-      0
-    ],
-    [
-      4,
-      0
-    ],
-    [
-      3,
-      0
-    ],
-    [
-      2,
-      0
-    ],
-    [
-      1,
-      0
-    ],
-    [
-      2,
-      1
-    ],
-    [
-      0,
-      0
-    ],
-    [
-      8,
-      0
-    ],
-    [
-      8,
-      3
-    ],
-    [
-      7,
-      3
-    ],
-    [
-      6,
-      3
-    ],
-    [
-      5,
-      3
-    ],
-    [
-      4,
-      3
-    ],
-    [
-      3,
-      3
-    ],
-    [
-      2,
-      3
-    ],
-    [
-      1,
-      3
-    ],
-    [
-      0,
-      3
-    ],
-    [
-      0,
-      4
-    ],
-    [
-      1,
-      4
-    ],
-    [
-      2,
-      4
-    ],
-    [
-      3,
-      4
-    ],
-    [
-      4,
-      4
-    ],
-    [
-      5,
-      4
-    ],
-    [
-      6,
-      4
-    ],
-    [
-      7,
-      4
-    ],
-    [
-      8,
-      4
-    ]
-  ]
-}
-    
-  ];
-
-  setScreen("minigames", `
-    <section class="panel">
-      <h2>Minigames</h2>
-      <p>Side levels for chaos. They still give Twigs.</p>
-      <div class="grid-list" id="miniGrid"></div>
-      <br>
-      <button class="bubble-btn" id="backBtn">Back</button>
-    </section>
-  `);
-
-  const grid = document.getElementById("miniGrid");
-
-  minigames.forEach((level, index) => {
-    const btn = document.createElement("button");
-    btn.className = "tile-btn";
-    btn.innerHTML = `
-      ${level.name}: ${level.title}
-      <small>${level.desc}</small>
-    `;
-    btn.addEventListener("click", () => startCustomLevel(level, index, "minigames"));
-    grid.appendChild(btn);
-  });
-
-  document.getElementById("backBtn").onclick = showMenu;
-}
-function showShop() {
-  setScreen("shop", `
-    <section class="panel">
-      <h2>Twig Shop</h2>
-      <p>You have <b>${save.twigs}</b> Twigs and <b>${getSticks()}</b> Sticks.</p>
-      <p>Trade Twigs into Sticks, buy badges, and prepare for future unlocks.</p>
-      <div class="grid-list" id="shopGrid"></div>
-      <br>
-      <button class="bubble-btn" id="backBtn">Back</button>
-    </section>
-  `);
-
-  const grid = document.getElementById("shopGrid");
-
-  const tradeBtn = document.createElement("button");
-  tradeBtn.className = "tile-btn";
-  tradeBtn.innerHTML = `
-    Trade Twigs for Sticks
-    <small>Trade 5 Twigs for 3 Sticks.</small>
-    <small>You have ${save.twigs} Twigs and ${getSticks()} Sticks.</small>
-  `;
-
-  tradeBtn.addEventListener("click", () => {
-    if (save.twigs < 5) {
-      alert("Not enough Twigs.");
-      playSfx("no");
-      return;
+      obj = JSON.parse(atob(val));
     }
 
-    save.twigs -= 5;
-    save.sticks = getSticks() + 3;
-    saveGame();
-    playSfx("glow");
-    showShop();
-  });
-
-  grid.appendChild(tradeBtn);
-
-  for (const [id, badge] of Object.entries(CONFIG.shopBadges)) {
-    const owned = !!save.badges[id];
-
-    const btn = document.createElement("button");
-    btn.className = "tile-btn";
-    btn.innerHTML = `
-      ${badge.name}
-      <small>${badge.desc}</small>
-      <small>${owned ? "Owned" : `${badge.cost} Twigs`}</small>
-    `;
-
-    btn.addEventListener("click", () => {
-      if (owned) {
-        playSfx("no");
-        return;
-      }
-
-      if (save.twigs < badge.cost) {
-        playSfx("no");
-        alert("Not enough Twigs.");
-        return;
-      }
-
-      save.twigs -= badge.cost;
-      save.badges[id] = true;
-      saveGame();
-      playSfx("glow");
-      showShop();
-    });
-
-    grid.appendChild(btn);
+    const list = getCustomLevels();
+    list.push(obj);
+    saveCustomLevels(list);
+    showCustomLevels();
+  } catch (err) {
+    toast("That share code did not parse.");
   }
-
-  document.getElementById("backBtn").onclick = showMenu;
 }
 
-function showUpgrades() {
-  setScreen("upgrades", `
-    <section class="panel">
-      <h2>Upgrade Plants</h2>
-      <p>You have <b>${save.twigs}</b> Twigs and <b>${getSticks()}</b> Sticks.</p>
-      <p>Main levels use Twigs. Extra stat upgrades use Sticks.</p>
-      <div class="grid-list" id="upgradeGrid"></div>
-      <br>
-      <button class="bubble-btn" id="backBtn">Back</button>
-    </section>
-  `);
-
-  const grid = document.getElementById("upgradeGrid");
-
-  for (const [id, plant] of Object.entries(CONFIG.plants)) {
-    if (plant.tool) continue;
-
-    const unlocked = isPlantUnlocked(id);
-    const level = getPlantLevel(id);
-    const maxed = level >= CONFIG.upgrades.maxLevel;
-    const mainCost = getUpgradeCost(id);
-    const extra = getPlantExtraUpgrades(id);
-    const extraTotal = getPlantExtraTotal(id);
-
-    const card = document.createElement("div");
-    card.className = "tile-btn";
-
-    if (!unlocked) {
-      const unlockCost = plant.unlockCost || 0;
-
-      card.innerHTML = `
-        ${plant.name}
-        <small>${plant.desc}</small>
-        <small>Locked. Unlock cost: ${unlockCost} Sticks.</small>
-      `;
-
-      card.addEventListener("click", () => {
-        if (getSticks() < unlockCost) {
-          alert("Not enough Sticks.");
-          playSfx("no");
-          return;
-        }
-
-        save.sticks = getSticks() - unlockCost;
-        save.unlockedPlants[id] = true;
-        saveGame();
-        playSfx("glow");
-        showUpgrades();
-      });
-
-      grid.appendChild(card);
-      continue;
-    }
-
-    card.innerHTML = `
-      <b>${plant.name}</b>
-      <small>${getPlantLevelText(id)}</small>
-      <small>${plant.desc}</small>
-      <small>Main Level: ${maxed ? "Maxed" : `${mainCost} Twigs`}</small>
-      <small>Extra Upgrades: ${extraTotal}/20</small>
-
-      <div style="display:grid; gap:6px; margin-top:10px;">
-        <button class="bubble-btn" data-main="${id}">
-          Upgrade Main Level
-        </button>
-
-        <button class="bubble-btn" data-stat="${id}:cooldown">
-          Cooldown +${extra.cooldown}/5 - ${getStatUpgradeCost(id, "cooldown")} Sticks
-        </button>
-
-        <button class="bubble-btn" data-stat="${id}:cost">
-          Cost +${extra.cost}/5 - ${getStatUpgradeCost(id, "cost")} Sticks
-        </button>
-
-        <button class="bubble-btn" data-stat="${id}:health">
-          Health +${extra.health}/5 - ${getStatUpgradeCost(id, "health")} Sticks
-        </button>
-
-        <button class="bubble-btn" data-stat="${id}:power">
-          Attack/Produce +${extra.power}/5 - ${getStatUpgradeCost(id, "power")} Sticks
-        </button>
-      </div>
-    `;
-
-    grid.appendChild(card);
-  }
-
-  grid.querySelectorAll("[data-main]").forEach(button => {
-    button.addEventListener("click", () => {
-      const id = button.dataset.main;
-      const level = getPlantLevel(id);
-      const maxed = level >= CONFIG.upgrades.maxLevel;
-      const cost = getUpgradeCost(id);
-
-      if (maxed) {
-        alert("This plant is already max main level.");
-        playSfx("no");
-        return;
-      }
-
-      if (save.twigs < cost) {
-        alert("Not enough Twigs.");
-        playSfx("no");
-        return;
-      }
-
-      save.twigs -= cost;
-      save.upgrades[id] = level + 1;
-      saveGame();
-      playSfx("glow");
-      showUpgrades();
-    });
-  });
-
-  grid.querySelectorAll("[data-stat]").forEach(button => {
-    button.addEventListener("click", () => {
-      const [id, stat] = button.dataset.stat.split(":");
-      const extra = getPlantExtraUpgrades(id);
-
-      if (extra[stat] >= 5) {
-        alert("This stat is already +5.");
-        playSfx("no");
-        return;
-      }
-
-      const cost = getStatUpgradeCost(id, stat);
-
-      if (getSticks() < cost) {
-        alert("Not enough Sticks.");
-        playSfx("no");
-        return;
-      }
-
-      save.sticks = getSticks() - cost;
-      extra[stat] += 1;
-
-      saveGame();
-      playSfx("glow");
-      showUpgrades();
-    });
-  });
-
-  document.getElementById("backBtn").onclick = showMenu;
-}
-
-  
-
-function showMeetDaWhatever() {
-  setScreen("meet", `
-    <section class="panel">
-      <h2>Meet Da Whatever</h2>
-      <p>An almanac of plants, derps, and other questionable beings.</p>
-
-      <h2>Plants</h2>
-      <div class="meet-grid" id="plantMeetGrid"></div>
-
-      <br>
-      <h2>Derps</h2>
-      <div class="meet-grid" id="enemyMeetGrid"></div>
-
-      <br>
-      <button class="bubble-btn" id="backBtn">Back</button>
-    </section>
-  `);
-
-  const plantGrid = document.getElementById("plantMeetGrid");
-  const enemyGrid = document.getElementById("enemyMeetGrid");
-
-  for (const [id, plant] of Object.entries(CONFIG.plants)) {
-    const card = document.createElement("article");
-    card.className = "meet-card";
-
-    card.innerHTML = `
-      <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
-      <h3>${plant.name}</h3>
-      <b>${plant.role || "Plant"}</b>
-      <p>${plant.desc}</p>
-      <p><b>Cost:</b> ${plant.cost} Glow</p>
-      <p><b>Level:</b> ${plant.tool ? "Tool" : `${getPlantLevel(id)}/${CONFIG.upgrades.maxLevel}`}</p>
-    `;
-
-    plantGrid.appendChild(card);
-  }
-
-  for (const [id, enemy] of Object.entries(CONFIG.enemies)) {
-    const card = document.createElement("article");
-    card.className = "meet-card";
-
-    card.innerHTML = `
-      <img src="${CONFIG.images[enemy.img]}" alt="${enemy.name}">
-      <h3>${enemy.name}</h3>
-      <b>${enemy.boss ? "Boss" : enemy.fragile ? "Glass Cannon" : "Derp"}</b>
-      <p>${enemy.desc}</p>
-      <p><b>HP:</b> ${enemy.hp}</p>
-      <p><b>Damage:</b> ${enemy.damage}</p>
-      <p><b>Speed:</b> ${enemy.speed}</p>
-    `;
-
-    enemyGrid.appendChild(card);
-  }
-
-  document.getElementById("backBtn").onclick = showMenu;
+function deleteCustom(i) {
+  const list = getCustomLevels();
+  list.splice(i, 1);
+  saveCustomLevels(list);
+  showCustomLevels();
 }
 
 // ============================================================
-// 5. LEVEL START + GAME UI
+// 4. GAME START + LOOP
 // ============================================================
 
-function startCustomLevel(level, index = 0, listName = "custom") {
-  startLevelFromObject(level, index, listName);
+function rand(min, max) {
+  return randomInt(min, max);
 }
 
-function startLevel(index = 0, listName = "levels") {
-  const level = CONFIG.levels[index];
+function normalizeLevel(level) {
+  const copy = JSON.parse(JSON.stringify(level));
 
-  if (!level) {
-    showMenu();
-    return;
-  }
+  copy.name = copy.name || "Custom";
+  copy.title = copy.title || "Untitled";
+  copy.desc = copy.desc || "";
+  copy.startGlow = Number(copy.startGlow || 150);
+  copy.background = copy.background || "forest";
+  copy.music = copy.music || CONFIG.audio.defaultLevelTrack;
+  copy.waves = Array.isArray(copy.waves) ? copy.waves : [];
+  copy.lava = Array.isArray(copy.lava) ? copy.lava : [];
 
-  startLevelFromObject(level, index, listName);
+  return copy;
 }
 
-function startLevelFromObject(level, index, listName) {
-  loopId++;
-  const myLoop = loopId;
+function startLevel(index = 0, listName = "levels", loadout = CONFIG.defaultLoadout) {
+  const level = normalizeLevel(getLevelList(listName)[index]);
 
   currentScreen = "game";
+  loopId++;
 
-  state = {
-    loopId: myLoop,
-    levelIndex: index,
-    levelList: listName,
-    level,
+  const selected = [
+    "removeTool",
+    ...loadout
+      .filter(id => id !== "removeTool" && isPlantUnlocked(id))
+      .slice(0, CONFIG.gameplay.maxLoadoutPlants)
+  ];
 
-    glow: level.startGlow,
-    glowProducedTotal: 0,
+  setScreen(`
+    <div class="screen gameWrap">
+      <div class="hud">
+        <button class="btn" onclick="exitGame()">← Exit</button>
+        <span class="pill" id="levelName"></span>
+        <span class="pill" id="glowHud"></span>
+        <span class="pill" id="waveHud"></span>
 
-    waveIndex: 0,
-    waveTimer: 0,
-    waveSpawnIndex: 0,
-    betweenWaveTimer: 120,
+        <button class="btn" onclick="togglePause()" id="pauseBtn">Pause</button>
+        <button class="btn" onclick="setGameSpeed(0.5)">Slow</button>
+        <button class="btn" onclick="setGameSpeed(1)">1x</button>
+        <button class="btn" onclick="setGameSpeed(2)">2x</button>
+      </div>
 
-    grid: [],
-    plants: [],
-    enemies: [],
-    projectiles: [],
-    explosions: [],
-    particles: [],
-    glowDrops: [],
+      <canvas
+        id="gameCanvas"
+        width="${CONFIG.board.canvasW}"
+        height="${CONFIG.board.canvasH}"
+      ></canvas>
 
-    selectedPlant: CONFIG.defaultLoadout[0],
-    placementCooldowns: {},
-
-    running: true,
-    won: false,
-    lost: false,
-    ending: false,
-
-    message: "Protect the lawn from questionable creatures.",
-    tick: 0
-  };
-
-  for (let row = 0; row < ROWS; row++) {
-    state.grid[row] = [];
-
-    for (let col = 0; col < COLS; col++) {
-      state.grid[row][col] = {
-        plant: null,
-        lava: false
-      };
-    }
-  }
-
-  for (const [col, row] of level.lava || []) {
-    if (state.grid[row] && state.grid[row][col]) {
-      state.grid[row][col].lava = true;
-    }
-  }
-
-  app.innerHTML = `
-    <main class="game-screen">
-      <section class="hud">
-        <span class="hud-title">${level.name}: ${level.title}</span>
-        <span id="glowHud">Glow: ${state.glow}</span>
-        <span id="twigHud">Twigs: ${save.twigs}</span>
-        <span id="waveHud">Wave: 1/${level.waves.length}</span>
-      </section>
-
-      <section class="game-layout">
-        <div class="canvas-wrap">
-          <canvas id="gameCanvas" width="${CONFIG.board.canvasW}" height="${CONFIG.board.canvasH}"></canvas>
-        </div>
-
-        <aside class="cards" id="plantCards"></aside>
-      </section>
-
-      <section class="bottom-bar">
-        <span class="message" id="gameMessage">${state.message}</span>
-        <div>
-          <button class="bubble-btn" id="restartBtn">Restart</button>
-          <button class="bubble-btn danger-btn" id="menuBtn">Menu</button>
-        </div>
-      </section>
-    </main>
-  `;
+      <div class="plantbar" id="plantBar"></div>
+    </div>
+  `);
 
   canvas = document.getElementById("gameCanvas");
   ctx = canvas.getContext("2d");
 
-  canvas.addEventListener("click", handleCanvasClick);
+  state = {
+    level,
+    index,
+    listName,
+    loadout: selected,
 
-  canvas.addEventListener("touchstart", event => {
-    const touch = event.touches[0];
-    if (!touch) return;
+    running: true,
+    gameSpeed: 1,
+    tick: 0,
 
-    event.preventDefault();
+    glow: level.startGlow,
 
-    handleCanvasClick({
-      clientX: touch.clientX,
-      clientY: touch.clientY
-    });
-  }, { passive: false });
+    plants: [],
+    enemies: [],
+    projectiles: [],
+    enemyBullets: [],
+    explosions: [],
+    particles: [],
+    texts: [],
 
-  document.getElementById("menuBtn").onclick = showMenu;
-  document.getElementById("restartBtn").onclick = () => startLevelFromObject(level, index, listName);
+    waveIndex: 0,
+    waveTick: 0,
+    waveActive: false,
+    spawnQueue: [],
 
-  renderCards();
-  selectPlant(state.selectedPlant);
-  updateHud();
+    lava: new Set(level.lava.map(a => `${a[0]},${a[1]}`)),
+    cooldowns: {},
+
+    selectedPlant: selected[1] || selected[0],
+    beachPending: null,
+
+    shake: 0,
+    won: false,
+    lost: false,
+    kills: 0
+  };
+
+  canvas.addEventListener("pointerdown", handleCanvasClick);
 
   playMusic(level.music || CONFIG.audio.defaultLevelTrack);
+  renderCards();
+  updateHud();
 
-  requestAnimationFrame(() => gameLoop(myLoop));
+  requestAnimationFrame(() => gameLoop(loopId));
+}
+
+function exitGame() {
+  loopId++;
+  state = null;
+  showMenu();
+}
+
+function togglePause() {
+  if (!state) return;
+
+  state.running = !state.running;
+
+  const btn = document.getElementById("pauseBtn");
+  if (btn) {
+    btn.textContent = state.running ? "Pause" : "Resume";
+  }
+}
+
+function setGameSpeed(v) {
+  if (!state) return;
+
+  state.gameSpeed = v;
+
+  toast(
+    v === 0.5
+      ? "Slow mode"
+      : v === 2
+        ? "2x chaos"
+        : "Normal speed"
+  );
+}
+
+function updateHud() {
+  if (!state) return;
+
+  const levelName = document.getElementById("levelName");
+  const glowHud = document.getElementById("glowHud");
+  const waveHud = document.getElementById("waveHud");
+
+  if (levelName) {
+    levelName.textContent = `${state.level.name}: ${state.level.title}`;
+  }
+
+  if (glowHud) {
+    glowHud.textContent = `Glow: ${Math.floor(state.glow)}`;
+  }
+
+  if (waveHud) {
+    waveHud.textContent =
+      `Wave ${Math.min(state.waveIndex + 1, state.level.waves.length)}/${state.level.waves.length} • ${state.gameSpeed}x`;
+  }
 }
 
 function renderCards() {
-  const cards = document.getElementById("plantCards");
-  if (!cards || !state) return;
+  const bar = document.getElementById("plantBar");
+  if (!bar || !state) return;
 
-  cards.innerHTML = "";
+  bar.innerHTML = state.loadout.map(id => {
+    const p = getPlantStats(id);
+    const cd = Math.ceil((state.cooldowns[id] || 0) / 60);
+    const selected = state.selectedPlant === id;
 
-  for (const id of CONFIG.defaultLoadout) {
-  const plant = CONFIG.plants[id];
-  if (!plant) continue;
-  if (!isPlantUnlocked(id)) continue;
-
-  const stats = getPlantStats(id);
-
-    const cooldown = state.placementCooldowns[id] || 0;
-
-    const btn = document.createElement("button");
-    btn.className = "plant-card";
-    btn.dataset.plant = id;
-    btn.disabled = cooldown > 0;
-
-    btn.innerHTML = `
-      <img src="${CONFIG.images[plant.img]}" alt="${plant.name}">
-      <b>${plant.name}</b><br>
-      <small>${stats.cost} Glow</small><br>
-<small>${plant.tool ? "Tool" : getPlantLevelText(id)}</small>
-      ${cooldown > 0 ? `<br><small>${Math.ceil(cooldown / 60)}s</small>` : ""}
+    return `
+      <button
+        class="plantCard ${selected ? "selected" : ""} ${cd > 0 ? "cool" : ""}"
+        onclick="selectPlant('${id}')"
+      >
+        <div class="name">${p.name}</div>
+        ${imgTag(p.img, 38)}
+        <div class="cost">${p.tool ? "Tool" : p.cost + " Glow"}</div>
+        <div class="tiny">${cd > 0 ? "CD " + cd + "s" : p.role}</div>
+      </button>
     `;
-
-    btn.addEventListener("click", () => {
-      selectPlant(id);
-    });
-
-    cards.appendChild(btn);
-  }
+  }).join("");
 }
 
 function selectPlant(id) {
   if (!state) return;
 
   state.selectedPlant = id;
-
-  document.querySelectorAll(".plant-card").forEach(card => {
-    card.classList.toggle("selected", card.dataset.plant === id);
-  });
-
-  say(`Selected ${CONFIG.plants[id].name}.`);
+  renderCards();
 }
 
-function say(text) {
-  if (!state) return;
+function handleCanvasClick(ev) {
+  if (!state || state.won || state.lost) return;
 
-  state.message = text;
-
-  const msg = document.getElementById("gameMessage");
-  if (msg) msg.textContent = text;
-}
-
-function updateHud() {
-  if (!state) return;
-
-  const glowHud = document.getElementById("glowHud");
-  if (twigHud) twigHud.textContent = `Twigs: ${save.twigs} | Sticks: ${getSticks()}`;
-  const waveHud = document.getElementById("waveHud");
-
-  if (glowHud) glowHud.textContent = `Glow: ${state.glow}`;
-  if (twigHud) twigHud.textContent = `Twigs: ${save.twigs}`;
-
-  if (waveHud) {
-    const current = Math.min(state.waveIndex + 1, state.level.waves.length);
-    waveHud.textContent = `Wave: ${current}/${state.level.waves.length}`;
-  }
-}
-
-function handleCanvasClick(event) {
   unlockAudio();
 
-  if (!state || !state.running || state.lost || state.won || state.ending) return;
-  if (!canvas) return;
-
-  const pos = gridFromPointer(event.clientX, event.clientY);
-  if (!pos) return;
-
-  plantAt(pos.row, pos.col, state.selectedPlant);
-}
-
-function gridFromPointer(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
 
-  const x = (clientX - rect.left) * (canvas.width / rect.width);
-  const y = (clientY - rect.top) * (canvas.height / rect.height);
+  const mx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+  const my = (ev.clientY - rect.top) * (canvas.height / rect.height);
 
-  const col = Math.floor((x - GRID_X) / CELL_W);
-  const row = Math.floor((y - GRID_Y) / CELL_H);
+  const cell = posToCell(mx, my);
+  if (!cell) return;
 
-  if (row < 0 || row >= ROWS || col < 0 || col >= COLS) {
-    return null;
-  }
-
-  return { row, col, x, y };
+  useSelectedOnCell(cell.col, cell.row);
 }
-// ============================================================
-// 6. PLANTING + GAMEPLAY
-// ============================================================
+function useSelectedOnCell(col, row) {
+  const id = state.selectedPlant;
+  const def = getPlantStats(id);
+  if (!def) return;
 
-function plantAt(row, col, id) {
-  if (!state) return;
+  const key = `${col},${row}`;
+  const existing = state.plants.find(p => p.col === col && p.row === row);
 
-  const cell = state.grid[row][col];
-  const plantDef = CONFIG.plants[id];
-
-  if (!plantDef) return;
-
-  if (plantDef.tool === "remove") {
-    removePlant(row, col);
+  if (def.tool === "remove") {
+    if (existing) {
+      state.plants = state.plants.filter(p => p !== existing);
+      state.glow += Math.floor((existing.cost || 0) * CONFIG.gameplay.removeRefundPercent);
+      popText(existing.x, existing.y, "Refund!", "#8ff");
+      playSfx("glow");
+    }
     return;
   }
 
-  if (cell.lava) {
-    say("You cannot plant on lava. Mor Level says no.");
+  if (state.lava.has(key)) {
+    playSfx("no");
+    popText(GRID_X + col * CELL_W + 20, GRID_Y + row * CELL_H + 30, "NOPE", "#f66");
+    return;
+  }
+
+  if (state.cooldowns[id] > 0) {
     playSfx("no");
     return;
   }
 
-  if (cell.plant) {
-    say("Something is already there.");
+  if (state.glow < def.cost) {
+    playSfx("no");
+    popText(GRID_X + col * CELL_W + 15, GRID_Y + row * CELL_H + 35, "Need Glow", "#ffd36a");
+    return;
+  }
+
+  if (def.instantLaunch) {
+    state.glow -= def.cost;
+    state.cooldowns[id] = def.placementCooldown || 120;
+    launchBeachBall(col, row, def);
+    playSfx("shoot");
+    renderCards();
+    updateHud();
+    return;
+  }
+
+  if (existing) {
     playSfx("no");
     return;
   }
 
-  const cooldown = state.placementCooldowns[id] || 0;
-  if (cooldown > 0) {
-    say(`${plantDef.name} cooldown: ${Math.ceil(cooldown / 60)}s`);
-    playSfx("no");
-    return;
-  }
+  const c = cellCenter(col, row);
 
-  const stats = getPlantStats(id);
+  state.glow -= def.cost;
+  state.cooldowns[id] = def.placementCooldown || 120;
 
-if (state.glow < stats.cost) {
-    say("Not enough Glow.");
-    playSfx("no");
-    return;
-  }
-
-  
-  state.glow -= plantDef.cost;
-
-  const plant = {
+  state.plants.push({
     id,
-    row,
     col,
-    hp: stats.hp,
-    maxHp: stats.hp,
-    originalCost: plantDef.cost,
-    cooldown: startingCooldown(stats),
-    fuse: stats.fuse || 0
-  };
+    row,
+    x: c.x,
+    y: c.y,
+    hp: def.hp,
+    maxHp: def.hp,
+    cost: def.cost,
+    tick: rand(0, 40),
+    fuse: def.fuse || 0,
+    hitGlowCd: 0
+  });
 
-  cell.plant = plant;
-  state.plants.push(plant);
-  state.placementCooldowns[id] = plantDef.placementCooldown || 0;
-
-  say(`${plantDef.name} placed.`);
+  addParticles(c.x, c.y, "#7cff6b", 8);
   playSfx("plant");
-
   renderCards();
-  selectPlant(id);
   updateHud();
 }
 
-function removePlant(row, col) {
-  const cell = state.grid[row][col];
+function launchBeachBall(col, row, def) {
+  const c = cellCenter(col, row);
 
-  if (!cell.plant) {
-    say("Nothing to remove.");
-    playSfx("no");
-    return;
-  }
-
-  const plant = cell.plant;
-  const def = CONFIG.plants[plant.id];
-  const refund = Math.max(
-    1,
-    Math.floor((plant.originalCost || def.cost || 0) * CONFIG.gameplay.removeRefundPercent)
-  );
-
-  cell.plant = null;
-  state.plants = state.plants.filter(p => p !== plant);
-
-  state.glow += refund;
-
-  say(`Removed ${def.name}. +${refund} Glow.`);
-  playSfx("glow");
-  updateHud();
+  state.projectiles.push({
+    kind: "beach",
+    x: GRID_X - 35,
+    y: c.y,
+    x0: GRID_X - 35,
+    y0: c.y,
+    x1: c.x,
+    y1: c.y,
+    t: 0,
+    total: 42,
+    returning: false,
+    damage: def.damage,
+    radius: def.radius,
+    row,
+    fromPlant: "beachBall",
+    img: def.img
+  });
 }
 
-function startingCooldown(plantDef) {
-  if (plantDef.producer) return plantDef.produceCooldown || 900;
-  if (plantDef.shooter) return plantDef.shootCooldown || 120;
-  return plantDef.fuse || 180;
-}
+function gameLoop(myLoop) {
+  if (!state || myLoop !== loopId || currentScreen !== "game") return;
 
-function updateCooldowns() {
-  let changed = false;
+  if (state.running) {
+    const steps = Math.max(1, Math.round(state.gameSpeed));
+    const slow = state.gameSpeed < 1;
 
-  for (const id of Object.keys(state.placementCooldowns)) {
-    if (state.placementCooldowns[id] > 0) {
-      state.placementCooldowns[id]--;
-      changed = true;
+    for (let i = 0; i < steps; i++) {
+      if (slow && state.tick % 2 === 1) {
+        state.tick++;
+        continue;
+      }
+
+      state.tick++;
+      updateCooldowns();
+      updateWaves();
+      updatePlants();
+      updateProjectiles();
+      updateEnemyBullets();
+      updateEnemies();
+      updateEffects();
+      checkEnd();
+    }
+
+    updateHud();
+
+    if (state.tick % 30 === 0) {
+      renderCards();
     }
   }
 
-  if (changed && state.tick % 30 === 0) {
-    renderCards();
-    selectPlant(state.selectedPlant);
+  draw();
+  requestAnimationFrame(() => gameLoop(myLoop));
+}
+
+function updateCooldowns() {
+  for (const id of Object.keys(state.cooldowns)) {
+    state.cooldowns[id] = Math.max(0, state.cooldowns[id] - 1);
   }
 }
 
+function updateWaves() {
+  if (state.waveIndex >= state.level.waves.length) return;
+
+  if (!state.waveActive) {
+    state.spawnQueue = (state.level.waves[state.waveIndex] || []).map(s => ({
+      ...s,
+      delay: Number(s.delay || 0)
+    }));
+
+    state.waveTick = 0;
+    state.waveActive = true;
+  }
+
+  state.waveTick++;
+
+  for (const s of state.spawnQueue) {
+    if (!s.spawned && state.waveTick >= s.delay) {
+      spawnEnemy(s);
+      s.spawned = true;
+    }
+  }
+
+  if (state.spawnQueue.every(s => s.spawned)) {
+    if (state.enemies.length === 0) {
+      state.waveActive = false;
+      state.waveIndex++;
+      state.waveTick = -CONFIG.gameplay.waveGapTicks;
+    }
+  }
+}
+
+function spawnEnemy(sp) {
+  const def = CONFIG.enemies[sp.type] || CONFIG.enemies.basic;
+  const row = clamp(Number(sp.row ?? rand(0, ROWS - 1)), 0, ROWS - 1);
+  const size = Number(sp.size || def.size || 1);
+  const hp = Math.round(Number(sp.hp || def.hp) * size);
+  const c = cellCenter(COLS - 1, row);
+
+  state.enemies.push({
+    type: sp.type || "basic",
+    row,
+    x: CONFIG.board.canvasW + 45 * size,
+    y: c.y,
+    hp,
+    maxHp: hp,
+    size,
+    speed: Number(sp.speed || def.speed),
+    damage: Number(sp.damage || def.damage),
+    attackCd: 0,
+    shootCd: rand(40, 120),
+    hitbox: 42 * size
+  });
+}
+
+function findEnemyInLane(row, x) {
+  return state.enemies
+    .filter(e => e.row === row && e.x > x - 10)
+    .sort((a, b) => a.x - b.x)[0];
+}
+
+function findAnyEnemy(row) {
+  return state.enemies
+    .filter(e => e.row === row)
+    .sort((a, b) => a.x - b.x)[0];
+}
 function updatePlants() {
-  for (const plant of [...state.plants]) {
-    const def = getPlantStats(plant.id);
-    if (!def) continue;
+  for (const p of [...state.plants]) {
+    const def = getPlantStats(p.id);
 
-    plant.cooldown--;
+    p.tick++;
 
-    if (def.producer) updateProducer(plant, def);
-    if (def.shooter) updateShooter(plant, def);
+    if (p.hitGlowCd > 0) {
+      p.hitGlowCd--;
+    }
+
+    if (def.producer && p.tick % (def.produceCooldown || 999999) === 0) {
+      state.glow += def.produceAmount;
+      addParticles(p.x, p.y, "#ffe76a", 10);
+      popText(p.x, p.y, `+${def.produceAmount}`, "#ffe76a");
+      playSfx("glow");
+    }
+
+    if (def.shooter) {
+      updatePlantShooter(p, def);
+    }
 
     if (def.fuse) {
-      plant.fuse--;
+      p.fuse--;
 
-      if (plant.fuse <= 0) {
-        explodePlant(plant, def);
+      if (p.fuse <= 0) {
+        explode(p.x, p.y, def.radius, def.damage, "kaboom");
+        state.plants = state.plants.filter(x => x !== p);
+      }
+    }
+
+    if (p.hp <= 0) {
+      state.plants = state.plants.filter(x => x !== p);
+    }
+  }
+}
+
+function updatePlantShooter(p, def) {
+  if (p.cooldown > 0) {
+    p.cooldown--;
+    return;
+  }
+
+  const target = findEnemyInLane(p.row, p.x);
+
+  if (!target && def.fireType !== "multiLane") {
+    return;
+  }
+
+  if (def.fireType === "multiLane") {
+    let fired = false;
+
+    for (const r of [p.row - 1, p.row, p.row + 1]) {
+      if (r < 0 || r >= ROWS) continue;
+
+      if (findAnyEnemy(r)) {
+        fireStraight(p.x + 24, cellCenter(0, r).y, def, p.id, r);
+        fired = true;
+      }
+    }
+
+    if (fired) {
+      p.cooldown = def.shootCooldown;
+      playSfx("shoot");
+    }
+
+    return;
+  }
+
+  if (def.fireType === "lob") {
+    fireLob(p, target, def);
+  } else {
+    fireStraight(p.x + 24, p.y, def, p.id, p.row);
+
+    const extra =
+      def.doubleShotChance &&
+      rand(1, 100) <= def.doubleShotChance;
+
+    if (extra) {
+      setTimeout(() => {
+        if (state) {
+          fireStraight(p.x + 24, p.y + 6, def, p.id, p.row);
+        }
+      }, 60);
+    }
+  }
+
+  p.cooldown = def.shootCooldown;
+  playSfx("shoot");
+}
+
+function calcDamage(base, sourceId, target) {
+  let dmg = base;
+
+  const def = CONFIG.plants[sourceId] || {};
+  const tags = CONFIG.enemies[target?.type]?.tags || [];
+
+  if (def.bonusVsTags?.some(t => tags.includes(t))) {
+    dmg *= def.bonusMultiplier || 1.5;
+  }
+
+  const crit = Math.random() < CONFIG.gameplay.critChance;
+
+  if (crit) {
+    dmg *= CONFIG.gameplay.critMultiplier;
+  }
+
+  return {
+    dmg: Math.round(dmg),
+    crit
+  };
+}
+
+function fireStraight(x, y, def, from, row) {
+  state.projectiles.push({
+    kind: "straight",
+    x,
+    y,
+    row,
+    damage: def.projectileDamage || 20,
+    speed: def.projectileSpeed || 5,
+    fromPlant: from,
+    radius: def.areaRadius || 0,
+    color: def.bonusVsTags ? "#9dfcff" : "#704018"
+  });
+}
+
+function fireLob(p, target, def) {
+  state.projectiles.push({
+    kind: "lob",
+    x: p.x,
+    y: p.y,
+    x0: p.x,
+    y0: p.y,
+    x1: target.x,
+    y1: target.y,
+    t: 0,
+    total: 55,
+    damage: def.projectileDamage || 40,
+    radius: def.areaRadius || 90,
+    fromPlant: p.id
+  });
+}
+
+function updateProjectiles() {
+  for (const pr of [...state.projectiles]) {
+    if (pr.kind === "straight") {
+      pr.x += pr.speed;
+
+      const hit = state.enemies.find(e =>
+        e.row === pr.row &&
+        Math.abs(e.x - pr.x) < e.hitbox
+      );
+
+      if (hit) {
+        const res = calcDamage(pr.damage, pr.fromPlant, hit);
+        damageEnemy(hit, res.dmg, res.crit);
+
+        if (pr.radius) {
+          explode(pr.x, pr.y, pr.radius, pr.damage, pr.fromPlant);
+        }
+
+        state.projectiles = state.projectiles.filter(x => x !== pr);
+      }
+
+      if (pr.x > CONFIG.board.canvasW + 40) {
+        state.projectiles = state.projectiles.filter(x => x !== pr);
+      }
+    } else if (pr.kind === "lob" || pr.kind === "beach") {
+      pr.t++;
+
+      const t = pr.t / pr.total;
+      const arc = Math.sin(t * Math.PI) * 70;
+
+      pr.x = pr.x0 + (pr.x1 - pr.x0) * t;
+      pr.y = pr.y0 + (pr.y1 - pr.y0) * t - arc;
+
+      if (pr.t >= pr.total) {
+        explode(pr.x1, pr.y1, pr.radius, pr.damage, pr.fromPlant);
+
+        if (pr.kind === "beach" && !pr.returning) {
+          pr.returning = true;
+          pr.t = 0;
+
+          [pr.x0, pr.x1] = [pr.x1, GRID_X - 35];
+
+          pr.y0 = pr.y1;
+          pr.y1 = pr.y0;
+        } else {
+          state.projectiles = state.projectiles.filter(x => x !== pr);
+        }
       }
     }
   }
 }
 
-function updateProducer(plant, def) {
-  if (plant.cooldown > 0) return;
+function damageEnemy(e, dmg, crit = false) {
+  e.hp -= dmg;
 
-  const amount = def.produceAmount || 25;
-  state.glow += amount;
-  state.glowProducedTotal += amount;
-  plant.cooldown = def.produceCooldown || 900;
-
-  popParticle(
-    GRID_X + plant.col * CELL_W + CELL_W / 2,
-    GRID_Y + plant.row * CELL_H + 20,
-    "#ffe95a"
+  addParticles(
+    e.x,
+    e.y,
+    crit ? "#fff36a" : "#ff5959",
+    crit ? 10 : 4
   );
 
-  say(`+${amount} Glow.`);
-  playSfx("glow");
-}
+  popText(
+    e.x,
+    e.y,
+    crit ? `CRIT ${dmg}` : `-${dmg}`,
+    crit ? "#fff36a" : "#ff8888"
+  );
 
-function updateShooter(plant, def) {
-  if (plant.cooldown > 0) return;
+  playSfx(crit ? "crit" : "hit");
 
-  const plantX = GRID_X + plant.col * CELL_W;
-
-  const targetExists = state.enemies.some(enemy => {
-    return enemy.row === plant.row && enemy.x > plantX;
-  });
-
-  if (!targetExists) return;
-
-  fireProjectile(plant, def, plant.row);
-
-  if (Math.random() * 100 < (def.doubleShotChance || 0)) {
-    fireProjectile(plant, def, plant.row);
+  if (e.hp <= 0) {
+    state.enemies = state.enemies.filter(x => x !== e);
+    state.glow += CONFIG.gameplay.glowFromEnemy;
+    state.kills++;
+    addParticles(e.x, e.y, "#ffe76a", 12);
   }
-
-  plant.cooldown = def.shootCooldown || 120;
-  playSfx("shoot");
 }
 
-function fireProjectile(plant, def, row) {
-  state.projectiles.push({
-    x: GRID_X + plant.col * CELL_W + CELL_W * 0.68,
-    y: GRID_Y + row * CELL_H + CELL_H * 0.46,
-    row,
-    speed: def.projectileSpeed || 4.5,
-    damage: def.projectileDamage || 20
-  });
-}
-
-function explodePlant(plant, def) {
-  const x = GRID_X + plant.col * CELL_W + CELL_W / 2;
-  const y = GRID_Y + plant.row * CELL_H + CELL_H / 2;
-
-  for (const enemy of state.enemies) {
-    const dist = Math.hypot(enemy.x - x, enemy.y - y);
-
-    if (dist <= (def.radius || 130)) {
-      enemy.hp -= def.damage || 150;
-    }
-  }
-
+function explode(x, y, radius, damage, source = "boom") {
   state.explosions.push({
     x,
     y,
-    radius: 10,
+    radius,
     life: 24
   });
 
-  state.grid[plant.row][plant.col].plant = null;
-  state.plants = state.plants.filter(p => p !== plant);
+  state.shake = 8;
 
-  say(`${def.name} went kaboom.`);
+  for (const e of [...state.enemies]) {
+    const d = Math.hypot(e.x - x, e.y - y);
+
+    if (d <= radius + e.hitbox) {
+      const res = calcDamage(damage, source, e);
+      damageEnemy(e, res.dmg, res.crit);
+    }
+  }
+
   playSfx("boom");
 }
+function updateEnemyBullets() {
+  for (const b of [...state.enemyBullets]) {
+    b.x -= b.speed;
 
-function updateProjectiles() {
-  for (let i = state.projectiles.length - 1; i >= 0; i--) {
-    const p = state.projectiles[i];
-    p.x += p.speed;
-
-    const hit = state.enemies.find(enemy => {
-      return enemy.row === p.row && Math.abs(enemy.x - p.x) < 28;
-    });
+    const hit = state.plants.find(p =>
+      p.row === b.row &&
+      Math.abs(p.x - b.x) < 35
+    );
 
     if (hit) {
-      hit.hp -= p.damage;
-      state.projectiles.splice(i, 1);
-      popParticle(hit.x, hit.y, "#b8754a");
+      hit.hp -= b.damage;
+      addParticles(hit.x, hit.y, "#9dfffa", 5);
+      state.enemyBullets = state.enemyBullets.filter(x => x !== b);
       playSfx("hit");
-      continue;
     }
 
-    if (p.x > CONFIG.board.canvasW + 40) {
-      state.projectiles.splice(i, 1);
-    }
-  }
-}
-
-function spawnEnemy(type, row) {
-  const def = CONFIG.enemies[type];
-  if (!def) return;
-
-  state.enemies.push({
-    type,
-    row,
-    x: GRID_X + COLS * CELL_W + 42,
-    y: GRID_Y + row * CELL_H + CELL_H / 2,
-    hp: def.hp,
-    maxHp: def.hp,
-    speed: def.speed,
-    damage: def.damage,
-    biteCooldown: 0
-  });
-}
-
-function updateWaves() {
-  const waves = state.level.waves;
-
-  if (state.waveIndex >= waves.length) {
-    if (state.enemies.length === 0 && !state.won) {
-      winLevel();
-    }
-
-    return;
-  }
-
-  if (state.betweenWaveTimer > 0) {
-    state.betweenWaveTimer--;
-    return;
-  }
-
-  const wave = waves[state.waveIndex];
-  state.waveTimer++;
-
-  while (
-    state.waveSpawnIndex < wave.length &&
-    state.waveTimer >= wave[state.waveSpawnIndex].delay
-  ) {
-    const spawn = wave[state.waveSpawnIndex];
-    spawnEnemy(spawn.type, spawn.row);
-    state.waveSpawnIndex++;
-  }
-
-  if (state.waveSpawnIndex >= wave.length && state.enemies.length === 0) {
-    state.waveIndex++;
-    state.waveSpawnIndex = 0;
-    state.waveTimer = 0;
-    state.betweenWaveTimer = CONFIG.gameplay.waveGapTicks;
-
-    if (state.waveIndex < waves.length) {
-      say("Next wave soon.");
+    if (b.x < 0) {
+      state.enemyBullets = state.enemyBullets.filter(x => x !== b);
     }
   }
 }
 
 function updateEnemies() {
-  for (let i = state.enemies.length - 1; i >= 0; i--) {
-    const enemy = state.enemies[i];
+  for (const e of [...state.enemies]) {
+    const def = CONFIG.enemies[e.type] || CONFIG.enemies.basic;
 
-    if (enemy.hp <= 0) {
-      state.enemies.splice(i, 1);
-      state.glow += CONFIG.gameplay.glowFromEnemy;
-      popParticle(enemy.x, enemy.y, "#ffffff");
-      playSfx("glow");
-      continue;
-    }
+    const plant = state.plants
+      .filter(p =>
+        p.row === e.row &&
+        Math.abs(p.x - e.x) < (34 + e.hitbox / 2)
+      )
+      .sort((a, b) => b.x - a.x)[0];
 
-    const col = Math.floor((enemy.x - GRID_X) / CELL_W);
-    const plant = state.grid[enemy.row]?.[col]?.plant;
+    const rangedTarget = state.plants
+      .filter(p =>
+        p.row === e.row &&
+        p.x < e.x &&
+        e.x - p.x < 420
+      )
+      .sort((a, b) => b.x - a.x)[0];
 
-    if (plant && Math.abs(enemy.x - (GRID_X + col * CELL_W + CELL_W / 2)) < 38) {
-      if (enemy.biteCooldown <= 0) {
-        plant.hp -= enemy.damage;
-        enemy.biteCooldown = 60;
-        playSfx("hit");
+    if (def.rangedShooter && rangedTarget && !plant) {
+      e.shootCd--;
 
-        popParticle(
-          GRID_X + col * CELL_W + CELL_W / 2,
-          GRID_Y + enemy.row * CELL_H + CELL_H / 2,
-          "#ff4444"
-        );
+      if (e.shootCd <= 0) {
+        e.shootCd = def.shootCooldown || 150;
 
-        if (plant.hp <= 0) {
-          state.grid[plant.row][plant.col].plant = null;
-          state.plants = state.plants.filter(p => p !== plant);
-        }
-      } else {
-        enemy.biteCooldown--;
+        state.enemyBullets.push({
+          x: e.x - 25,
+          y: e.y,
+          row: e.row,
+          damage: def.shotDamage || 12,
+          speed: def.shotSpeed || 3.5
+        });
+
+        addParticles(e.x, e.y, "#55fff2", 5);
+        playSfx("laser");
       }
 
-      continue;
+      e.x -= e.speed * 0.25;
+    } else if (plant) {
+      e.attackCd--;
+
+      if (e.attackCd <= 0) {
+        e.attackCd = 45;
+        plant.hp -= e.damage;
+
+        const pdef = getPlantStats(plant.id);
+
+        if (pdef.produceWhenHit && plant.hitGlowCd <= 0) {
+          plant.hitGlowCd = pdef.hitProduceCooldown || 30;
+          state.glow += pdef.produceWhenHit;
+
+          popText(
+            plant.x,
+            plant.y,
+            `Tax +${pdef.produceWhenHit}`,
+            "#ffe76a"
+          );
+
+          addParticles(plant.x, plant.y, "#ffe76a", 8);
+        }
+
+        addParticles(plant.x, plant.y, "#ff5555", 5);
+        playSfx("hit");
+      }
+    } else {
+      e.x -= e.speed;
     }
 
-    enemy.x -= enemy.speed;
-
-    if (enemy.x < GRID_X - 55) {
-      loseLevel();
+    if (e.x < GRID_X - 48) {
+      loseGame();
       return;
     }
   }
 }
 
 function updateEffects() {
-  for (let i = state.explosions.length - 1; i >= 0; i--) {
-    const ex = state.explosions[i];
-    ex.radius += 7;
+  for (const ex of [...state.explosions]) {
     ex.life--;
 
-    if (ex.life <= 0) state.explosions.splice(i, 1);
+    if (ex.life <= 0) {
+      state.explosions = state.explosions.filter(x => x !== ex);
+    }
   }
 
-  for (let i = state.particles.length - 1; i >= 0; i--) {
-    const p = state.particles[i];
-    p.y -= 0.45;
+  for (const p of [...state.particles]) {
+    p.x += p.vx;
+    p.y += p.vy;
     p.life--;
 
-    if (p.life <= 0) state.particles.splice(i, 1);
+    if (p.life <= 0) {
+      state.particles = state.particles.filter(x => x !== p);
+    }
+  }
+
+  for (const t of [...state.texts]) {
+    t.y -= 0.45;
+    t.life--;
+
+    if (t.life <= 0) {
+      state.texts = state.texts.filter(x => x !== t);
+    }
+  }
+
+  if (state.shake > 0) {
+    state.shake--;
   }
 }
 
-function popParticle(x, y, color) {
-  state.particles.push({
+function addParticles(x, y, color, count = 6) {
+  for (let i = 0; i < count; i++) {
+    state.particles.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 3,
+      vy: (Math.random() - 0.5) * 3,
+      life: rand(18, 45),
+      color
+    });
+  }
+}
+
+function popText(x, y, text, color = "#fff") {
+  state.texts.push({
     x,
     y,
+    text,
     color,
     life: 45
   });
 }
 
-function winLevel() {
-  if (!state || state.won) return;
+function checkEnd() {
+  if (state.lost || state.won) return;
+
+  if (
+    state.waveIndex >= state.level.waves.length &&
+    state.enemies.length === 0 &&
+    !state.waveActive
+  ) {
+    winGame();
+  }
+}
+
+function winGame() {
+  if (state.won) return;
 
   state.won = true;
   state.running = false;
 
-  const reward = randomInt(CONFIG.currency.minWinReward, CONFIG.currency.maxWinReward);
-  save.twigs += reward;
-  saveGame();
+  const reward =
+    rand(CONFIG.currency.minWinReward, CONFIG.currency.maxWinReward) +
+    Math.floor(state.kills / 5);
 
-  say(`You won! +${reward} Twigs.`);
+  const sticks = state.listName === "minigames" ? 2 : 1;
+
+  save.twigs += reward;
+  save.sticks += sticks;
+
+  if (state.listName === "levels") {
+    save.cleared[state.level.name] = true;
+  }
+
+  if (state.listName === "minigames") {
+    save.bestMinigames[state.level.name] = true;
+  }
+
+  const newly = [];
+
+  for (const [id, p] of Object.entries(CONFIG.plants)) {
+    if (p.unlockAt === state.level.name && !save.unlockedPlants[id]) {
+      save.unlockedPlants[id] = true;
+      newly.push(p.name);
+    }
+  }
+
+  saveGame();
   playMusic(CONFIG.audio.victoryTrack);
   playSfx("win");
 
-    setTimeout(() => {
-    if (state.levelList === "levels") {
-      const nextIndex = state.levelIndex + 1;
-
-      if (CONFIG.levels[nextIndex]) {
-        startLevel(nextIndex, "levels");
-        return;
-      }
-    }
+  setTimeout(() => {
+    toast(
+      `Victory! +${reward} Twigs, +${sticks} Sticks${
+        newly.length ? ` • Unlocked: ${newly.join(", ")}` : ""
+      }`
+    );
 
     showMenu();
-  }, 1600);
+  }, 900);
 }
 
-function loseLevel() {
-  if (!state || state.lost) return;
+function loseGame() {
+  if (state.lost) return;
 
   state.lost = true;
   state.running = false;
 
-  say("A derp entered your house. It is over.");
   playSfx("no");
-  stopMusic();
-}
 
+  setTimeout(() => {
+    toast("A derp escaped. Pain.");
+    showMenu();
+  }, 700);
+}
 // ============================================================
-// 7. DRAWING
+// 5. DRAWING
 // ============================================================
 
 function draw() {
   if (!ctx || !state) return;
 
-  ctx.clearRect(0, 0, CONFIG.board.canvasW, CONFIG.board.canvasH);
+  ctx.save();
+
+  if (state.shake > 0) {
+    ctx.translate(
+      rand(-state.shake, state.shake),
+      rand(-state.shake, state.shake)
+    );
+  }
 
   drawBackground();
+  drawGrid();
   drawLava();
   drawPlants();
   drawEnemies();
   drawProjectiles();
+  drawEnemyBullets();
   drawExplosions();
   drawParticles();
+  drawTexts();
+
+  if (!state.running && !state.won && !state.lost) {
+    drawOverlay("PAUSED");
+  }
+
+  ctx.restore();
 }
 
 function drawBackground() {
-  const bgKey = state.level.background || "forest";
-  const bg = backgrounds[bgKey];
+  const bg = getGameImage(state.level.background);
 
   if (imageReady(bg)) {
-    ctx.drawImage(bg, 0, 0, CONFIG.board.canvasW, CONFIG.board.canvasH);
-    return;
+    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+  } else {
+    const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+
+    grad.addColorStop(0, "#13262d");
+    grad.addColorStop(1, "#071014");
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#ff4bd8";
+    ctx.fillRect(14, 14, 32, 32);
   }
+}
 
-  ctx.fillStyle = "#5fb846";
-  ctx.fillRect(0, 0, CONFIG.board.canvasW, CONFIG.board.canvasH);
+function drawGrid() {
+  ctx.lineWidth = 2;
 
-  ctx.fillStyle = "rgba(255,255,255,0.15)";
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      if ((row + col) % 2 === 0) {
-        ctx.fillRect(
-          GRID_X + col * CELL_W,
-          GRID_Y + row * CELL_H,
-          CELL_W,
-          CELL_H
-        );
-      }
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const x = GRID_X + c * CELL_W;
+      const y = GRID_Y + r * CELL_H;
+
+      ctx.fillStyle =
+        (c + r) % 2 === 0
+          ? "rgba(255,255,255,.08)"
+          : "rgba(0,0,0,.09)";
+
+      ctx.fillRect(x, y, CELL_W, CELL_H);
+
+      ctx.strokeStyle = "rgba(180,245,255,.22)";
+      ctx.strokeRect(x, y, CELL_W, CELL_H);
     }
   }
 }
 
 function drawLava() {
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      if (!state.grid[row][col].lava) continue;
+  for (const key of state.lava) {
+    const [c, r] = key.split(",").map(Number);
 
-      const x = GRID_X + col * CELL_W;
-      const y = GRID_Y + row * CELL_H;
+    const x = GRID_X + c * CELL_W;
+    const y = GRID_Y + r * CELL_H;
 
-      ctx.fillStyle = "rgba(232, 91, 23, 0.78)";
-      ctx.fillRect(x, y, CELL_W, CELL_H);
+    ctx.fillStyle = "rgba(255,70,30,.55)";
+    ctx.fillRect(x + 4, y + 4, CELL_W - 8, CELL_H - 8);
 
-      ctx.fillStyle = "rgba(255, 221, 68, 0.9)";
-      ctx.fillRect(x + 8, y + 28, CELL_W - 16, 8);
-
-      ctx.strokeStyle = "rgba(120, 20, 0, 0.9)";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x + 2, y + 2, CELL_W - 4, CELL_H - 4);
-    }
+    ctx.fillStyle = "rgba(255,210,40,.35)";
+    ctx.fillRect(x + 14, y + 18, CELL_W - 28, 12);
   }
 }
 
-function drawPlants() {
-  for (const plant of state.plants) {
-    const def = CONFIG.plants[plant.id];
-    const img = images[def.img];
+function drawFallbackSquare(x, y, w, h, label) {
+  ctx.fillStyle = "#ff4bd8";
+  ctx.fillRect(x, y, w, h);
 
-    const x = GRID_X + plant.col * CELL_W + 6;
-    const y = GRID_Y + plant.row * CELL_H + 3;
+  ctx.strokeStyle = "#111";
+  ctx.strokeRect(x, y, w, h);
+
+  ctx.fillStyle = "#111";
+  ctx.font = "10px monospace";
+  ctx.fillText(String(label || "?").slice(0, 10), x + 5, y + h / 2);
+}
+
+function drawPlants() {
+  for (const p of state.plants) {
+    const def = getPlantStats(p.id);
+    const img = getGameImage(def.img);
+
+    const x = p.x - 32;
+    const y = p.y - 34;
 
     if (imageReady(img)) {
-      ctx.drawImage(img, x, y, CELL_W - 12, CELL_H - 8);
+      ctx.drawImage(img, x, y, 64, 64);
     } else {
-      ctx.fillStyle = "#169948";
-      ctx.fillRect(x + 10, y + 12, CELL_W - 32, CELL_H - 28);
-
-      ctx.fillStyle = "#06240f";
-      ctx.font = "10px monospace";
-      ctx.fillText(def.name.slice(0, 8), x + 12, y + 42);
+      drawFallbackSquare(x, y, 58, 58, def.name);
     }
 
-    if (plant.hp < plant.maxHp) {
+    if (p.hp < p.maxHp) {
       ctx.fillStyle = "#000";
-      ctx.fillRect(x + 8, y + CELL_H - 12, CELL_W - 24, 6);
+      ctx.fillRect(p.x - 30, p.y + 34, 60, 6);
 
       ctx.fillStyle = "#49ff49";
       ctx.fillRect(
-        x + 8,
-        y + CELL_H - 12,
-        (CELL_W - 24) * Math.max(0, plant.hp / plant.maxHp),
+        p.x - 30,
+        p.y + 34,
+        60 * Math.max(0, p.hp / p.maxHp),
         6
       );
     }
@@ -4375,91 +3658,134 @@ function drawPlants() {
 }
 
 function drawEnemies() {
-  for (const enemy of state.enemies) {
-    const def = CONFIG.enemies[enemy.type];
-    const img = images[def.img];
+  for (const e of state.enemies) {
+    const def = CONFIG.enemies[e.type] || CONFIG.enemies.basic;
+    const img = getGameImage(def.img);
 
-    const size = def.boss ? 96 : 76;
+    const size = 68 * (e.size || 1);
 
     if (imageReady(img)) {
-      ctx.drawImage(img, enemy.x - size / 2, enemy.y - size / 2, size, size);
+      ctx.drawImage(img, e.x - size / 2, e.y - size / 2, size, size);
     } else {
-      ctx.fillStyle = def.fragile ? "#111" : def.boss ? "#777" : "#eee";
-      ctx.fillRect(enemy.x - size / 4, enemy.y - size / 2.7, size / 2, size * 0.72);
-
-      ctx.fillStyle = def.fragile ? "#ff2222" : "#111";
-      ctx.font = "10px monospace";
-      ctx.fillText(def.name.slice(0, 8), enemy.x - 22, enemy.y);
+      drawFallbackSquare(
+        e.x - size / 3,
+        e.y - size / 2,
+        size * 0.66,
+        size * 0.72,
+        def.name
+      );
     }
 
     ctx.fillStyle = "#000";
-    ctx.fillRect(enemy.x - 28, enemy.y - 54, 56, 6);
-
-    ctx.fillStyle = def.boss ? "#ffbb33" : def.fragile ? "#ff2222" : "#ff3333";
     ctx.fillRect(
-      enemy.x - 28,
-      enemy.y - 54,
-      56 * Math.max(0, enemy.hp / enemy.maxHp),
+      e.x - 32 * e.size,
+      e.y - size / 2 - 12,
+      64 * e.size,
+      6
+    );
+
+    ctx.fillStyle = def.boss
+      ? "#ffbb33"
+      : def.fragile
+        ? "#ff2222"
+        : "#ff3333";
+
+    ctx.fillRect(
+      e.x - 32 * e.size,
+      e.y - size / 2 - 12,
+      64 * e.size * Math.max(0, e.hp / e.maxHp),
       6
     );
   }
 }
 
 function drawProjectiles() {
-  ctx.fillStyle = "#5b2b16";
-
   for (const p of state.projectiles) {
-    ctx.fillRect(p.x, p.y, 18, 6);
+    if (p.kind === "beach") {
+      const img = getGameImage(p.img);
+
+      if (imageReady(img)) {
+        ctx.drawImage(img, p.x - 18, p.y - 18, 36, 36);
+      } else {
+        ctx.fillStyle = "#ff4bd8";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 17, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (p.kind === "lob") {
+      ctx.fillStyle = "#b37a32";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = p.color || "#6b3a19";
+      ctx.fillRect(p.x - 4, p.y - 3, 18, 6);
+    }
+  }
+}
+
+function drawEnemyBullets() {
+  ctx.fillStyle = "#67fff4";
+
+  for (const b of state.enemyBullets) {
+    ctx.fillRect(b.x - 12, b.y - 3, 22, 6);
   }
 }
 
 function drawExplosions() {
   for (const ex of state.explosions) {
-    ctx.strokeStyle = `rgba(255, 90, 20, ${ex.life / 24})`;
+    ctx.strokeStyle = `rgba(255,130,25,${ex.life / 24})`;
     ctx.lineWidth = 8;
+
     ctx.beginPath();
-    ctx.arc(ex.x, ex.y, ex.radius, 0, Math.PI * 2);
+    ctx.arc(
+      ex.x,
+      ex.y,
+      ex.radius * (1 - ex.life / 50),
+      0,
+      Math.PI * 2
+    );
     ctx.stroke();
   }
 }
 
 function drawParticles() {
   for (const p of state.particles) {
-    ctx.globalAlpha = p.life / 45;
+    ctx.globalAlpha = Math.max(0, p.life / 45);
     ctx.fillStyle = p.color;
-    ctx.fillRect(p.x - 5, p.y - 5, 10, 10);
+    ctx.fillRect(p.x - 4, p.y - 4, 8, 8);
     ctx.globalAlpha = 1;
   }
 }
 
-// ============================================================
-// 8. MAIN LOOP + BOOT
-// ============================================================
+function drawTexts() {
+  ctx.font = "bold 14px monospace";
+  ctx.textAlign = "center";
 
-function gameLoop(myLoop) {
-  if (!state || myLoop !== loopId || currentScreen !== "game") return;
-
-  if (state.running) {
-    state.tick++;
-
-    updateCooldowns();
-    updateWaves();
-    updatePlants();
-    updateProjectiles();
-    updateEnemies();
-    updateEffects();
-    updateHud();
-
-    if (state.tick % 30 === 0) {
-      renderCards();
-      selectPlant(state.selectedPlant);
-    }
+  for (const t of state.texts) {
+    ctx.globalAlpha = Math.max(0, t.life / 45);
+    ctx.fillStyle = t.color;
+    ctx.fillText(t.text, t.x, t.y);
+    ctx.globalAlpha = 1;
   }
 
-  draw();
-
-  requestAnimationFrame(() => gameLoop(myLoop));
+  ctx.textAlign = "left";
 }
+
+function drawOverlay(txt) {
+  ctx.fillStyle = "rgba(0,0,0,.45)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 44px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(txt, canvas.width / 2, canvas.height / 2);
+  ctx.textAlign = "left";
+}
+
+// ============================================================
+// 6. BOOT
+// ============================================================
 
 function boot() {
   loadSave();
@@ -4471,7 +3797,7 @@ function boot() {
 
   showMenu();
 
-  console.log("Plants Against Derps v2 booted.");
+  console.log("PAD v2.5 Bullcrap Replacement booted.");
 }
 
 boot();
