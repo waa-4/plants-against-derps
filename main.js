@@ -1,6 +1,6 @@
 // ============================================================
-// Plants Against Derps v2.5 - Bullcrap Replacement Edition
-// Clean single-file replacement for main.js.
+// Plants Against Derps v2.5 - OG Bullcrap Edition
+// Edit in the config thingy
 // Features: direct image paths, pink-square fallback, fixed unlocks,
 // loadout picker, upgrades, minigames, chess 1-4, enemy sizes/hitboxes,
 // critical hits, alien gunner shots, speed buttons, pause, special plants.
@@ -2053,7 +2053,7 @@ function showMenu() {
     <div class="screen menu">
       <div class="panel">
         <h1 class="title">${CONFIG.gameTitle}</h1>
-        <p class="sub">Bullcrap Replacement Edition</p>
+        <p class="sub">Original Bullcrap Edition</p>
 
         <div class="stack">
           <button class="btn good" onclick="showLevelSelect()">Play Story</button>
