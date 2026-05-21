@@ -13,7 +13,8 @@ honestly kinda simple, you only need a mouse!
 Select the bullcrap and enter a level.
 Place the plants in the weird lookin squares 🗿.
 Beating those levels gives Twigs!
-Twigs can be used for badges and upgrading. (as of writing)
+Twigs can be used for badges and stuff while
+Sticks are used for upgrading/unlocking plants! (and you can upgrade infinitely!)
 
 ## Fangames
 Want to create your own Plants Against Derps Fangame? Feel free to fork this!
